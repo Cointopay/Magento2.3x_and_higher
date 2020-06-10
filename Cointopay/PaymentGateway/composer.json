@@ -1,0 +1,24 @@
+{
+    "name": "cointopay/paymentgateway",
+    "description": "Crypto currency payments",
+    "require": {},
+    "authors": [
+        {
+            "name": "Cointopay International B.V.",
+            "email": "support@cointopay.com",
+            "role": "Developer"
+        }
+    ],
+    "type": "magento2-module",
+    "version": "100.1.12",
+    "license": [
+        "OSL-3.0",
+        "GPL-3.0"
+    ],
+    "autoload": {
+        "files": [ "registration.php" ],
+        "psr-4": {
+            "Cointopay\\PaymentGateway\\": ""
+        }
+    }
+}
