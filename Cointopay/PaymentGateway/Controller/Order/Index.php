@@ -68,6 +68,26 @@ class Index extends \Magento\Framework\App\Action\Action
     * @var $securityKey
     **/
     protected $securityKey;
+	
+	/**
+    * @var $paidnotenoughStatus
+    **/
+    protected $paidnotenoughStatus;
+	
+	/**
+    * @var $paidnotenoughStatus
+    **/
+    protected $paidStatus;
+	
+	/**
+    * @var $paidnotenoughStatus
+    **/
+    protected $paidStatus;
+	
+	/**
+    * @var $failedStatus
+    **/
+    protected $failedStatus;
 
     /**
     * Merchant ID
@@ -83,6 +103,21 @@ class Index extends \Magento\Framework\App\Action\Action
     * Merchant COINTOPAY SECURITY Key
     */
     const XML_PATH_MERCHANT_SECURITY = 'payment/cointopay_gateway/merchant_gateway_security';
+	
+	/**
+    * Merchant COINTOPAY SECURITY Key
+    */
+    const XML_PATH_PAID_NOTENOUGH_ORDER_STATUS = 'payment/cointopay_gateway/order_status_paid_notenough';
+	
+	/**
+    * Merchant COINTOPAY SECURITY Key
+    */
+    const XML_PATH_PAID_ORDER_STATUS = 'payment/cointopay_gateway/order_status_paid';
+	
+	/**
+    * Merchant FAILED Order Status
+    */
+    const XML_PATH_ORDER_STATUS_FAILED = 'payment/cointopay_gateway/order_status_failed';
 
     /**
     * API URL
@@ -134,16 +169,19 @@ class Index extends \Magento\Framework\App\Action\Action
             $notenough = $this->getRequest()->getParam('notenough');
             $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
             $this->securityKey = $this->scopeConfig->getValue(self::XML_PATH_MERCHANT_SECURITY, $storeScope);
+			$this->paidnotenoughStatus = $this->scopeConfig->getValue(self::XML_PATH_PAID_NOTENOUGH_ORDER_STATUS, $storeScope);
+			$this->paidStatus = $this->scopeConfig->getValue(self::XML_PATH_PAID_ORDER_STATUS, $storeScope);
+			$this->failedStatus = $this->scopeConfig->getValue(self::XML_PATH_ORDER_STATUS_FAILED, $storeScope);
             if ($this->securityKey == $SecurityCode) {
 				$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 				$order = $objectManager->create('\Magento\Sales\Model\Order')
 					->loadByIncrementId($customerReferenceNr);
 				if (count($order->getData()) > 0) {
 					if ($status == 'paid' && $notenough == 1) {
-						$order->setState('pending_payment')->setStatus('pending_payment');
+						$order->setState($this->paidnotenoughStatus)->setStatus($this->paidnotenoughStatus);
 						$order->save();
 					} else if ($status == 'paid') {
-						$order->setState('complete')->setStatus('complete');
+						$order->setState($this->paidStatus)->setStatus($this->paidStatus);
 						$order->save();
 					} else if ($status == 'failed') {
 						if ($order->getStatus() == 'complete') {
@@ -155,7 +193,9 @@ class Index extends \Magento\Framework\App\Action\Action
 								'message' => 'Order cannot be cancel now, because it is completed now.'
 							]);
 						} else {
-							$this->orderManagement->cancel($order->getId());
+							//$this->orderManagement->cancel($order->getId());
+							$order->setState($this->failedStatus)->setStatus($this->failedStatus);
+						    $order->save();
 						}
 					} else {
 						/** @var \Magento\Framework\Controller\Result\Json $result */
