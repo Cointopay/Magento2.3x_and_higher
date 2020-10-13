@@ -80,11 +80,6 @@ class Index extends \Magento\Framework\App\Action\Action
     protected $paidStatus;
 	
 	/**
-    * @var $paidnotenoughStatus
-    **/
-    protected $paidStatus;
-	
-	/**
     * @var $failedStatus
     **/
     protected $failedStatus;
