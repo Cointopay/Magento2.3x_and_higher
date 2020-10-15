@@ -12,6 +12,7 @@
 			"ext-curl": "*",
 			"ext-xmlwriter": "*"
 		},
+	"minimum-stability": "dev"
     "authors": [
         {
             "name": "Cointopay International B.V.",
