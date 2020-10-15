@@ -12,7 +12,6 @@
 			"ext-curl": "*",
 			"ext-xmlwriter": "*"
 		},
-	"minimum-stability": "dev"
     "authors": [
         {
             "name": "Cointopay International B.V.",
@@ -20,6 +19,7 @@
             "role": "Developer"
         }
     ],
+	"minimum-stability": "dev",
     "autoload": {
         "files": [ "registration.php" ],
         "psr-4": {
