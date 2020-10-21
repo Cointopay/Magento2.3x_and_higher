@@ -5,7 +5,9 @@
 */
 
 namespace Cointopay\Paymentgateway\Controller\Index;
+
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 
 class Index extends \Magento\Framework\App\Action\Action
 {
@@ -17,6 +19,11 @@ class Index extends \Magento\Framework\App\Action\Action
     protected $_objectManager;
     protected $_checkoutSession;
     protected $_orderFactory;
+	
+	/**
+	* @var \Magento\Sales\Model\Order\Email\Sender\InvoiceSender
+	*/
+    protected $invoiceSender;
 
     /**
    * @var \Magento\Framework\App\Config\ScopeConfigInterface
@@ -72,6 +79,11 @@ class Index extends \Magento\Framework\App\Action\Action
     * @var $securityKey
     **/
     protected $securityKey;
+	
+	/**
+    * @var $paidStatus
+    **/
+    protected $paidStatus;
 
     /**
     * Merchant ID
@@ -87,6 +99,11 @@ class Index extends \Magento\Framework\App\Action\Action
     * Merchant COINTOPAY SECURITY Key
     */
     const XML_PATH_MERCHANT_SECURITY = 'payment/cointopay_gateway/merchant_gateway_security';
+	
+	/**
+    * Merchant COINTOPAY SECURITY Key
+    */
+    const XML_PATH_PAID_ORDER_STATUS = 'payment/cointopay_gateway/order_status_paid';
 
     /**
     * API URL
@@ -112,6 +129,7 @@ class Index extends \Magento\Framework\App\Action\Action
     * @param \Magento\Framework\View\Result\PageFactory $pageFactory
     * @param \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory
     * @param \Magento\Framework\Registry $registry
+	* @param \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender
     */
     public function __construct (
         \Magento\Framework\App\Action\Context $context,
@@ -125,7 +143,8 @@ class Index extends \Magento\Framework\App\Action\Action
         \Magento\Framework\ObjectManagerInterface $objectmanager,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Framework\Registry $registry
+        \Magento\Framework\Registry $registry,
+		\Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender
     ) {
         $this->_context = $context;
         $this->_jsonEncoder = $encoder;
@@ -139,6 +158,7 @@ class Index extends \Magento\Framework\App\Action\Action
         $this->_checkoutSession = $checkoutSession;
         $this->_orderFactory = $orderFactory;
         $this->_registry = $registry;
+		$this->invoiceSender = $invoiceSender;
         parent::__construct($context);
     }
 
@@ -149,6 +169,7 @@ class Index extends \Magento\Framework\App\Action\Action
             $this->coinId = $this->getRequest()->getParam('paymentaction');
             $this->merchantId = $this->scopeConfig->getValue(self::XML_PATH_MERCHANT_ID, $storeScope);
             $this->securityKey = $this->scopeConfig->getValue(self::XML_PATH_MERCHANT_SECURITY, $storeScope);
+			$this->paidStatus = $this->scopeConfig->getValue(self::XML_PATH_PAID_ORDER_STATUS, $storeScope);
             $type = $this->getRequest()->getParam('type');
             $this->currencyCode = $this->_storeManager->getStore()->getCurrentCurrency()->getCode();
             if ($type == 'status') {
@@ -156,9 +177,17 @@ class Index extends \Magento\Framework\App\Action\Action
                 if ($response == 'paid') {
                     $orderId = $this->getRealOrderId();
                     $order = $this->_objectManager->create('\Magento\Sales\Model\Order')->load($orderId);
-                    $orderState = Order::STATE_COMPLETE;
-                    $order->setState($orderState)->setStatus(Order::STATE_COMPLETE);
+					if ($order->canInvoice()) {
+						$invoice = $order->prepareInvoice();
+						$invoice->getOrder()->setIsInProcess(true);
+						$invoice->register()->pay();
+						$invoice->save();
+					}
+                    $order->setState($this->paidStatus)->setStatus($this->paidStatus);
                     $order->save();
+					if (isset($invoice)) {
+					   $this->invoiceSender->send($invoice);
+					}
                 }
                 /** @var \Magento\Framework\Controller\Result\Json $result */
                 $result = $this->resultJsonFactory->create();

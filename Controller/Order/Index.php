@@ -6,6 +6,8 @@
 
 namespace Cointopay\Paymentgateway\Controller\Order;
 
+use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
+
 class Index extends \Magento\Framework\App\Action\Action
 {
     protected $_context;
@@ -13,6 +15,11 @@ class Index extends \Magento\Framework\App\Action\Action
     protected $_jsonEncoder;
     protected $orderManagement;
     protected $resultJsonFactory;
+	
+	/**
+	* @var \Magento\Sales\Model\Order\Email\Sender\InvoiceSender
+	*/
+    protected $invoiceSender;
 
     /**
    * @var \Magento\Framework\App\Config\ScopeConfigInterface
@@ -132,6 +139,7 @@ class Index extends \Magento\Framework\App\Action\Action
     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
     * @param \Magento\Framework\View\Result\PageFactory $pageFactory
     * @param \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory
+	* @param \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender
     */
     public function __construct (
         \Magento\Framework\App\Action\Context $context,
@@ -141,7 +149,8 @@ class Index extends \Magento\Framework\App\Action\Action
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\View\Result\PageFactory $pageFactory,
         \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
-        \Magento\Sales\Api\OrderManagementInterface $orderManagement
+        \Magento\Sales\Api\OrderManagementInterface $orderManagement,
+		\Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender
     ) {
         $this->_context = $context;
         $this->_jsonEncoder = $encoder;
@@ -151,6 +160,7 @@ class Index extends \Magento\Framework\App\Action\Action
         $this->_pageFactory = $pageFactory;
         $this->resultJsonFactory = $resultJsonFactory;
         $this->orderManagement = $orderManagement;
+		$this->invoiceSender = $invoiceSender;
         parent::__construct($context);
     }
 
@@ -176,8 +186,19 @@ class Index extends \Magento\Framework\App\Action\Action
 						$order->setState($this->paidnotenoughStatus)->setStatus($this->paidnotenoughStatus);
 						$order->save();
 					} else if ($status == 'paid') {
+						if ($order->canInvoice()) {
+							$invoice = $order->prepareInvoice();
+							$invoice->getOrder()->setIsInProcess(true);
+							$invoice->register()->pay();
+							$invoice->save();
+						}
+
 						$order->setState($this->paidStatus)->setStatus($this->paidStatus);
 						$order->save();
+						if ($order->canInvoice()) {
+							$this->invoiceSender->send($invoice);
+						}
+						
 					} else if ($status == 'failed') {
 						if ($order->getStatus() == 'complete') {
 							/** @var \Magento\Framework\Controller\Result\Json $result */
@@ -232,7 +253,7 @@ class Index extends \Magento\Framework\App\Action\Action
             return $result->setData([
                 'CustomerReferenceNr' => $customerReferenceNr,
                 'status' => 'error',
-                'message' => 'General error'
+                'message' => 'General error:'.$e->getMessage()
             ]);
         }
         /** @var \Magento\Framework\Controller\Result\Json $result */
