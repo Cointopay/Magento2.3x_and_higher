@@ -19,8 +19,6 @@
             "role": "Developer"
         }
     ],
-	"minimum-stability": "100.1.13",
-	"prefer-stable": true,
     "autoload": {
         "files": [ "registration.php" ],
         "psr-4": {
