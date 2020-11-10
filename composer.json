@@ -2,7 +2,7 @@
     "name": "cointopay/paymentgateway",
     "description": "Crypto currency payments",
 	"type": "magento2-module",
-	"version": "100.1.13",
+	"version": "100.2.1",
 	"license": [
         "OSL-3.0",
         "GPL-3.0"
