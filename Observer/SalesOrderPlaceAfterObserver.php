@@ -125,7 +125,11 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
         \Magento\Framework\App\RequestInterface $request,
         \Magento\Sales\Model\Order\Status\HistoryFactory $historyFactory,
         \Magento\Framework\Session\SessionManagerInterface $coreSession,
-        \Magento\Sales\Model\OrderFactory $orderFactory
+        \Magento\Sales\Model\OrderFactory $orderFactory,
+        \Magento\Framework\App\ResponseFactory $_response,
+        \Magento\UrlRewrite\Model\UrlRewrite $urlRewrite,
+        \Magento\UrlRewrite\Model\UrlRewriteFactory $urlRewriteFactory,
+        \Magento\UrlRewrite\Model\UrlFinderInterface $urlFinder
     )
     {
         $this->logger = $logger;
@@ -140,6 +144,10 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
         $this->_historyFactory = $historyFactory;
         $this->_coreSession = $coreSession;
         $this->_orderFactory = $orderFactory;
+		$this->_response = $_response;
+        $this->_urlRewrite = $urlRewrite;
+        $this->_urlRewriteFactory = $urlRewriteFactory;
+        $this->urlFinder = $urlFinder;
     }
 
     /**
@@ -179,6 +187,19 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
 			$customerSession->setCoinresponse($response); //set value in customer session
 			$order->setExtOrderId($orderresponse['TransactionID']);
 			$order->save();
+			$UrlRewriteCollection=$this->_urlRewrite->getCollection()->addFieldToFilter('request_path', 'checkout/onepage/success');
+            $deleteItem = $UrlRewriteCollection->getFirstItem(); 
+            if ($UrlRewriteCollection->getFirstItem()->getId()) {
+                // target path does exist
+                $filterData = [
+                    UrlRewrite::REQUEST_PATH => 'checkout/onepage/success'
+                ];
+                $rewrite = $this->urlFinder->findOneByData($filterData);
+                $urlRewriteModel = $this->_urlRewriteFactory->create();
+                $deleteItem->delete();
+                $customerSession->setCoinStoreId($rewrite->getStoreId()); 
+                $customerSession->setCoinTargetPath($rewrite->getTargetPath());                
+            }
 		}
     }
 
