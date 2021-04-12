@@ -1,13 +1,20 @@
 <?php
-/**
- * Copyright © 2018 Cointopay. All rights reserved.
- * See COPYING.txt for license details.
- */
 namespace Cointopay\PaymentGateway\Block;
 
-class Thankyou extends \Magento\Sales\Block\Order\Totals
+class CtpInfo extends \Magento\Sales\Block\Order\Totals
 {
-    protected $checkoutSession;
+    /*public function __construct(
+        \Magento\Framework\View\Element\Template\Context $context,
+        array $data = []
+    ) {
+        parent::__construct($context, $data);
+    }
+    public function _prepareLayout()
+    {
+        return parent::_prepareLayout();
+    }*/
+
+protected $checkoutSession;
     protected $customerSession;
     protected $_orderFactory;
     protected $_coreSession;
@@ -93,15 +100,11 @@ class Thankyou extends \Magento\Sales\Block\Order\Totals
 
     public function getOrder()
     {
-        $this->_order = $this->_orderFactory->create()->loadByIncrementId(
-            $this->checkoutSession->getLastRealOrderId());
-		if(empty($this->_order)){
-			$objectManager =  \Magento\Framework\App\ObjectManager::getInstance();
-			$orderDatamodel = $objectManager->get('Magento\Sales\Model\Order')->getCollection()->getLastItem();
-			$orderId   =   $orderDatamodel->getId();
-			$this->_order = $objectManager->create('\Magento\Sales\Model\Order')->load($orderId);
-		}
-		return  $this->_order;
+		$objectManager =  \Magento\Framework\App\ObjectManager::getInstance();
+		$orderDatamodel = $objectManager->get('Magento\Sales\Model\Order')->getCollection()->getLastItem();
+		$orderId   =   $orderDatamodel->getId();
+		$order = $objectManager->create('\Magento\Sales\Model\Order')->load($orderId);
+        return  $order;
     }
 
     public function getCustomerId()
@@ -119,20 +122,23 @@ class Thankyou extends \Magento\Sales\Block\Order\Totals
             return json_decode($cointopay_response);
         }
         return false;*/
-		$objectManager =  \Magento\Framework\App\ObjectManager::getInstance(); 
-        $storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
-        $store = $storeManager->getStore();
-        $baseUrl = $store->getBaseUrl();
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-		$orderObj = $this->getOrder();
-		if(null !== $orderObj->getExtOrderId()){
-		$this->transactionId = $orderObj->getExtOrderId();
-		$this->merchantId = $this->scopeConfig->getValue(self::XML_PATH_MERCHANT_ID, $storeScope);
-        $this->merchantKey = $this->scopeConfig->getValue(self::XML_PATH_MERCHANT_KEY, $storeScope);
-        $this->_curlUrl = 'https://app.cointopay.com/v2REAPI?Call=Transactiondetail&MerchantID='.$this->merchantId.'&APIKey='.$this->merchantKey.'&TransactionID='.$this->transactionId.'&output=json';
-        $this->_curl->get($this->_curlUrl);
-        $response = $this->_curl->getBody();
-        return json_decode($response);
+			$objectManager =  \Magento\Framework\App\ObjectManager::getInstance(); 
+			$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
+			$store = $storeManager->getStore();
+			$baseUrl = $store->getBaseUrl();
+			$storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
+			$orderObj = $this->getOrder();
+			$payment_method_code = $orderObj->getPayment()->getMethodInstance()->getCode();
+			if ($payment_method_code == 'cointopay_gateway') {
+				if(null !== $orderObj->getExtOrderId()){
+				$this->transactionId = $orderObj->getExtOrderId();
+				$this->merchantId = $this->scopeConfig->getValue(self::XML_PATH_MERCHANT_ID, $storeScope);
+				$this->merchantKey = $this->scopeConfig->getValue(self::XML_PATH_MERCHANT_KEY, $storeScope);
+				$this->_curlUrl = 'https://app.cointopay.com/v2REAPI?Call=Transactiondetail&MerchantID='.$this->merchantId.'&APIKey='.$this->merchantKey.'&TransactionID='.$this->transactionId.'&output=json';
+				$this->_curl->get($this->_curlUrl);
+				$response = $this->_curl->getBody();
+				return json_decode($response);
+			}
 		}
 		return false;
 		

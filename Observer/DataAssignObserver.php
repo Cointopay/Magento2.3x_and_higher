@@ -21,10 +21,10 @@ class DataAssignObserver extends AbstractDataAssignObserver
 
         $paymentInfo = $method->getInfoInstance();
 
-        if ($data->getDataByKey('transaction_result') !== null) {
+        if (!empty($data['additional_data'])) {
             $paymentInfo->setAdditionalInformation(
-                'transaction_result',
-                $data->getDataByKey('transaction_result')
+                'additional_data',
+                $data['additional_data']['transaction_result']
             );
         }
     }

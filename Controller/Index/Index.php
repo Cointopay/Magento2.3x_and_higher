@@ -8,6 +8,8 @@ namespace Cointopay\Paymentgateway\Controller\Index;
 
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
+use Magento\Framework\App\ResponseInterface;
+
 
 class Index extends \Magento\Framework\App\Action\Action
 {
@@ -164,6 +166,7 @@ class Index extends \Magento\Framework\App\Action\Action
 
     public function execute()
     {
+		
         if ($this->getRequest()->isXmlHttpRequest()) {
             $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
             $this->coinId = $this->getRequest()->getParam('paymentaction');

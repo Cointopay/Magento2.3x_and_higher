@@ -1,0 +1,15 @@
+<?php
+/**
+ * Copyright © 2018 Cointopay. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+
+$order = $block->getOrder();
+if($order){
+	//echo $this->getBaseUrl();
+if($block->getPrevpage() == $this->getBaseUrl().'checkout/'){ 
+$payment_method_code = $order->getPayment()->getMethodInstance()->getCode();
+if ($payment_method_code == 'cointopay_gateway') {
+?>
+<a class="action primary" style="float: left;" href="<?= $this->getBaseUrl() ?>paymentcointopay/ctpinfo/index/">Click here to check your cointopay invoice detail</a>
+<?php }}}?>

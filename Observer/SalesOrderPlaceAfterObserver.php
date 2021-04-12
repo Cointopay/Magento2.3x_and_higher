@@ -85,6 +85,11 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
     * Merchant COINTOPAY SECURITY Key
     */
     const XML_PATH_MERCHANT_SECURITY = 'payment/cointopay_gateway/merchant_gateway_security';
+	
+	/**
+    * Merchant COINTOPAY ORDER STATUS
+    */
+    const XML_PATH_ORDER_STATUS = 'payment/cointopay_gateway/order_status';
 
     /**
     * API URL
@@ -112,6 +117,12 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
     * @param \Magento\Framework\View\Result\PageFactory $pageFactory
     */
     protected $_cookieManager;
+	
+	/**
+    * @var $paidStatus
+    **/
+    protected $orderStatus;
+
 
     public function __construct (
         \Psr\Log\LoggerInterface $logger,
@@ -129,8 +140,8 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
         \Magento\Framework\App\ResponseFactory $_response,
         \Magento\UrlRewrite\Model\UrlRewrite $urlRewrite,
         \Magento\UrlRewrite\Model\UrlRewriteFactory $urlRewriteFactory,
-        \Magento\UrlRewrite\Model\UrlFinderInterface $urlFinder
-    )
+        \Magento\UrlRewrite\Model\UrlFinderInterface $urlFinder    
+	)
     {
         $this->logger = $logger;
         $this->_cookieManager = $cookieManager;
@@ -158,19 +169,25 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
         /** @var $orderInstance Order */
-		$order = $observer->getEvent()->getOrder();
+		$order = $observer->getData('order');
+		$additional_data = "";
+		//$order = $observer->getEvent()->getOrder();
 		$orderId = $order->getId();
 		$this->_coreSession->start();
-		$this->coinId =  $this->_coreSession->getCoinid(); //$_SESSION['coin_id'];
+		//$this->coinId =  $this->_coreSession->getCoinId(); //$_SESSION['coin_id'];
 		//$this->coinId = $_SESSION['coin_id'];
 		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();				
 		//$orderObject = $objectManager->create('Magento\Sales\Model\Order')->load($orderId);
 		$lastOrderId = $order->getIncrementId();
 		$this->orderTotal = $order->getGrandTotal();
 		$payment_method_code = $order->getPayment()->getMethodInstance()->getCode();
+		$additional_data = $order->getPayment()->getAdditionalInformation();
+		//throw new \Magento\Framework\Exception\LocalizedException(__(var_dump($additional_data)));
+		$this->coinId =  $additional_data['additional_data'];
 		$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
 		$store = $storeManager->getStore();
 		$baseUrl = $store->getBaseUrl();
+		$storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
 		// // getting data from file
 		// $fileSystem = $objectManager->create('\Magento\Framework\Filesystem');
 		// $mediaPath=$fileSystem->getDirectoryRead(\Magento\Framework\App\Filesystem\DirectoryList::MEDIA)->getAbsolutePath();
@@ -186,6 +203,8 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
 			$customerSession = $objectManager->get('Magento\Customer\Model\Session');
 			$customerSession->setCoinresponse($response); //set value in customer session
 			$order->setExtOrderId($orderresponse['TransactionID']);
+            $this->orderStatus = $this->scopeConfig->getValue(self::XML_PATH_ORDER_STATUS, $storeScope);
+			$order->setState($this->orderStatus)->setStatus($this->orderStatus);
 			$order->save();
 			$UrlRewriteCollection=$this->_urlRewrite->getCollection()->addFieldToFilter('request_path', 'checkout/onepage/success');
             $deleteItem = $UrlRewriteCollection->getFirstItem(); 

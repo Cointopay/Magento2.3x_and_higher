@@ -15,6 +15,7 @@ class Index extends \Magento\Framework\App\Action\Action
     protected $_jsonEncoder;
     protected $orderManagement;
     protected $resultJsonFactory;
+	protected $resultFactory;
 	
 	/**
 	* @var \Magento\Sales\Model\Order\Email\Sender\InvoiceSender
@@ -148,7 +149,8 @@ class Index extends \Magento\Framework\App\Action\Action
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\View\Result\PageFactory $pageFactory,
-        \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
+        \Magento\Framework\Controller\Result\Raw $resultJsonFactory,
+		\Magento\Framework\Controller\ResultFactory $resultFactory,
         \Magento\Sales\Api\OrderManagementInterface $orderManagement,
 		\Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender
     ) {
@@ -159,6 +161,7 @@ class Index extends \Magento\Framework\App\Action\Action
         $this->_storeManager = $storeManager;
         $this->_pageFactory = $pageFactory;
         $this->resultJsonFactory = $resultJsonFactory;
+		$this->resultFactory = $resultFactory;
         $this->orderManagement = $orderManagement;
 		$this->invoiceSender = $invoiceSender;
         parent::__construct($context);
@@ -166,6 +169,7 @@ class Index extends \Magento\Framework\App\Action\Action
 
     public function execute()
     {
+		$page = $this->resultFactory->create(\Magento\Framework\Controller\ResultFactory::TYPE_PAGE);
         try {
             $customerReferenceNr = $this->getRequest()->getParam('CustomerReferenceNr');
             $status = $this->getRequest()->getParam('status');
@@ -177,6 +181,8 @@ class Index extends \Magento\Framework\App\Action\Action
 			$this->paidnotenoughStatus = $this->scopeConfig->getValue(self::XML_PATH_PAID_NOTENOUGH_ORDER_STATUS, $storeScope);
 			$this->paidStatus = $this->scopeConfig->getValue(self::XML_PATH_PAID_ORDER_STATUS, $storeScope);
 			$this->failedStatus = $this->scopeConfig->getValue(self::XML_PATH_ORDER_STATUS_FAILED, $storeScope);
+			/** @var Page $page */
+            
             if ($this->securityKey == $SecurityCode) {
 				$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 				$order = $objectManager->create('\Magento\Sales\Model\Order')
@@ -185,6 +191,15 @@ class Index extends \Magento\Framework\App\Action\Action
 					if ($status == 'paid' && $notenough == 1) {
 						$order->setState($this->paidnotenoughStatus)->setStatus($this->paidnotenoughStatus);
 						$order->save();
+						$result = $this->resultFactory->create(\Magento\Framework\Controller\ResultFactory::TYPE_RAW);
+							$block = $page->getLayout()->createBlock('Cointopay\PaymentGateway\Block\Index')
+							->setTemplate('Cointopay_PaymentGateway::order_response.phtml')
+							->setData('message','Not enough was received, please pay the remaining amount or contact support')
+							->toHtml();
+							$result->setContents($block);
+							//return $result;
+						   //$result->setData([$block]);
+							return $result;
 					} else if ($status == 'paid') {
 						if ($order->canInvoice()) {
 							$invoice = $order->prepareInvoice();
@@ -202,64 +217,83 @@ class Index extends \Magento\Framework\App\Action\Action
 					} else if ($status == 'failed') {
 						if ($order->getStatus() == 'complete') {
 							/** @var \Magento\Framework\Controller\Result\Json $result */
-							$result = $this->resultJsonFactory->create();
-							return $result->setData([
-								'CustomerReferenceNr' => $customerReferenceNr,
-								'status' => 'error',
-								'message' => 'Order cannot be cancel now, because it is completed now.'
-							]);
+							$result = $this->resultFactory->create(\Magento\Framework\Controller\ResultFactory::TYPE_RAW);
+							$block = $page->getLayout()->createBlock('Cointopay\PaymentGateway\Block\Index')
+							->setTemplate('Cointopay_PaymentGateway::order_response.phtml')
+							->setData('message','Order cannot be cancel now, because it is completed now.')
+							->toHtml();
+							$result->setContents($block);
+							return $result;
 						} else {
 							//$this->orderManagement->cancel($order->getId());
 							$order->setState($this->failedStatus)->setStatus($this->failedStatus);
 						    $order->save();
+							$result = $this->resultFactory->create(\Magento\Framework\Controller\ResultFactory::TYPE_RAW);
+							$block = $page->getLayout()->createBlock('Cointopay\PaymentGateway\Block\Index')
+							->setTemplate('Cointopay_PaymentGateway::order_response.phtml')
+							->setData('message','Order successfully cancelled.')
+							->toHtml();
+							$result->setContents($block);
+							//return $result;
+						   //$result->setData([$block]);
+							return $result;
+							
 						}
 					} else {
 						/** @var \Magento\Framework\Controller\Result\Json $result */
-						$result = $this->resultJsonFactory->create();
-						return $result->setData([
-							'CustomerReferenceNr' => $customerReferenceNr,
-							'status' => 'error',
-							'message' => 'Order status should have valid value.'
-						]);
+						$result = $this->resultFactory->create(\Magento\Framework\Controller\ResultFactory::TYPE_RAW);
+						$block = $page->getLayout()->createBlock('Cointopay\PaymentGateway\Block\Index')
+						->setTemplate('Cointopay_PaymentGateway::order_response.phtml')
+						->setData('message','Order status should have valid value.')
+						->toHtml();
+						$result->setContents($block);
+						return $result;
 					}
 					/** @var \Magento\Framework\Controller\Result\Json $result */
-					$result = $this->resultJsonFactory->create();
-					return $result->setData([
-						'CustomerReferenceNr' => $customerReferenceNr,
-						'status' => 'success',
-						'message' => 'Order status successfully updated.'
-					]);
+					$result = $this->resultFactory->create(\Magento\Framework\Controller\ResultFactory::TYPE_RAW);
+					$block = $page->getLayout()->createBlock('Cointopay\PaymentGateway\Block\Index')
+					->setTemplate('Cointopay_PaymentGateway::order_response.phtml')
+					->setData('message','Order status successfully updated.')
+					->toHtml();
+					$result->setContents($block);
+					return $result;
 				} else {
 					/** @var \Magento\Framework\Controller\Result\Json $result */
-					$result = $this->resultJsonFactory->create();
-					return $result->setData([
-						'CustomerReferenceNr' => $customerReferenceNr,
-						'status' => 'error',
-						'message' => 'No order found.'
-					]);
+					$result = $this->resultFactory->create(\Magento\Framework\Controller\ResultFactory::TYPE_RAW);
+					$block = $page->getLayout()->createBlock('Cointopay\PaymentGateway\Block\Index')
+					->setTemplate('Cointopay_PaymentGateway::order_response.phtml')
+					->setData('message','Order status successfully updated.')
+					->toHtml();
+					$result->setContents($block);
+					return $result;
 				}
 			} else {
 				/** @var \Magento\Framework\Controller\Result\Json $result */
-				$result = $this->resultJsonFactory->create();
-				return $result->setData([
-					'CustomerReferenceNr' => $customerReferenceNr,
-					'status' => 'error',
-					'message' => 'Security key is not valid.'
-				]);
+				$result = $this->resultFactory->create(\Magento\Framework\Controller\ResultFactory::TYPE_RAW);
+				$block = $page->getLayout()->createBlock('Cointopay\PaymentGateway\Block\Index')
+				->setTemplate('Cointopay_PaymentGateway::order_response.phtml')
+				->setData('message','Order status successfully updated.')
+				->toHtml();
+				$result->setContents($block);
+				return $result;
 			}
         } catch (\Exception $e) {
             /** @var \Magento\Framework\Controller\Result\Json $result */
-            $result = $this->resultJsonFactory->create();
-            return $result->setData([
-                'CustomerReferenceNr' => $customerReferenceNr,
-                'status' => 'error',
-                'message' => 'General error:'.$e->getMessage()
-            ]);
+            $result = $this->resultFactory->create(\Magento\Framework\Controller\ResultFactory::TYPE_RAW);
+			$block = $page->getLayout()->createBlock('Cointopay\PaymentGateway\Block\Index')
+			->setTemplate('Cointopay_PaymentGateway::order_response.phtml')
+			->setData('message','General error:'.$e->getMessage())
+			->toHtml();
+			$result->setContents($block);
+			return $result;
         }
         /** @var \Magento\Framework\Controller\Result\Json $result */
-        $result = $this->resultJsonFactory->create();
-        return $result->setData([
-            'status' => 'error'
-        ]);
+        $result = $this->resultFactory->create(\Magento\Framework\Controller\ResultFactory::TYPE_RAW);
+		$block = $page->getLayout()->createBlock('Cointopay\PaymentGateway\Block\Index')
+		->setTemplate('Cointopay_PaymentGateway::order_response.phtml')
+		->setData('message','Something went wrong. Try again later')
+		->toHtml();
+		$result->setContents($block);
+		return $result;
     }
 }
