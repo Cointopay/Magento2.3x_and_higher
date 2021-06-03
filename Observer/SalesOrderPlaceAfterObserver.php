@@ -181,9 +181,6 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
 		$lastOrderId = $order->getIncrementId();
 		$this->orderTotal = $order->getGrandTotal();
 		$payment_method_code = $order->getPayment()->getMethodInstance()->getCode();
-		$additional_data = $order->getPayment()->getAdditionalInformation();
-		//throw new \Magento\Framework\Exception\LocalizedException(__(var_dump($additional_data)));
-		$this->coinId =  $additional_data['additional_data'];
 		$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
 		$store = $storeManager->getStore();
 		$baseUrl = $store->getBaseUrl();
@@ -192,6 +189,9 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
 		// $fileSystem = $objectManager->create('\Magento\Framework\Filesystem');
 		// $mediaPath=$fileSystem->getDirectoryRead(\Magento\Framework\App\Filesystem\DirectoryList::MEDIA)->getAbsolutePath();
 		if ($payment_method_code == 'cointopay_gateway') {
+			$additional_data = $order->getPayment()->getAdditionalInformation();
+			//throw new \Magento\Framework\Exception\LocalizedException(__(var_dump($additional_data)));
+			$this->coinId =  $additional_data['transaction_result'];
 			$response = $this->sendCoins($lastOrderId);
 			$orderresponse = $this->_jsonDecoder->decode($response);
 			if(!isset($orderresponse['TransactionID'])){

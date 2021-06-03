@@ -20,15 +20,12 @@ class DataAssignObserver extends AbstractDataAssignObserver
         $data = $this->readDataArgument($observer);
 
         $paymentInfo = $method->getInfoInstance();
-		
-		if ($data->getDataByKey('additional_data') !== null) {
-			if (array_key_exists('transaction_result', $data->getDataByKey('additional_data'))) {
-				$paymentInfo->setAdditionalInformation(
-					'transaction_result',
-					$data->getDataByKey('additional_data')['transaction_result']
-				);
 
-			}
-		}
+        if ($data->getDataByKey('transaction_result') !== null) {
+            $paymentInfo->setAdditionalInformation(
+                'transaction_result',
+                $data->getDataByKey('transaction_result')
+            );
+        }
     }
 }

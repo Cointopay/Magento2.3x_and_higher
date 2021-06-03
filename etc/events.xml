@@ -7,7 +7,7 @@
 -->
 
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
-    <event name="payment_method_assign_data">
+    <event name="payment_method_assign_data_cointopay_gateway">
         <observer name="cointopay_payment_gateway_data_assign" instance="Cointopay\PaymentGateway\Observer\DataAssignObserver" />
     </event>
     <event name="sales_order_place_after">

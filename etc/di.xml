@@ -141,5 +141,5 @@
     </type>
     <preference for="Cointopay\PaymentGateway\Api\CointopayOrdersManagementInterface" type="Cointopay\PaymentGateway\Model\CointopayOrdersManagement"/>
 	<preference for="Cointopay\PaymentGateway\Api\CointopayTransactionInterface" type="Cointopay\PaymentGateway\Model\CointopayTransaction"/>
-
+	
 </config>
