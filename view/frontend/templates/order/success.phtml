@@ -170,7 +170,7 @@ $order = $block->getOrder();
                         });
                     });
             </script>
-			<?php }} ?>
+			<?php } else { echo $cointopay_content_data->message; } } ?>
 	    <?php } ?>
 <?php } ?>
 <a class="action primary" style="float: right;" href="<?= $this->getBaseUrl() ?>">Continue Shopping</a>
