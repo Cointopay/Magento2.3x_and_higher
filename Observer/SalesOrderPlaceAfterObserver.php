@@ -202,7 +202,7 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
 			$objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
 			$customerSession = $objectManager->get('Magento\Customer\Model\Session');
 			$customerSession->setCoinresponse($response); //set value in customer session
-			$order->setExtOrderId($orderresponse['TransactionID']);
+			$order->setExtOrderId($orderresponse['ConfirmCode']);
             $this->orderStatus = $this->scopeConfig->getValue(self::XML_PATH_ORDER_STATUS, $storeScope);
 			$order->setState($this->orderStatus)->setStatus($this->orderStatus);
 			$order->save();
