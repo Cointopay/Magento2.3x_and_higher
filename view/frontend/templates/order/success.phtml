@@ -82,8 +82,8 @@ $order = $block->getOrder();
         
 	    <!-- Cointopay popup Content -->
         <?php if ($payment_gateway_code == 'cointopay_gateway') { ?>
-	        <?php $cointopay_content_data = $block->getCointopayHtml(); ?>
-	        <?php if ($cointopay_content_data) {  $cointopay_content = $cointopay_content_data->data; 
+	        <?php $cointopay_content = $block->getCointopayHtml(); ?>
+	        <?php //if ($cointopay_content) {  $cointopay_content = $cointopay_content_data->data; 
 			      if ($cointopay_content) {?>
 		        <div class="popup-overlay cointopay active">
 		          	<div class="popup-content cointopay active">    
@@ -170,7 +170,7 @@ $order = $block->getOrder();
                         });
                     });
             </script>
-			<?php } else { echo $cointopay_content_data->message; } } ?>
+			<?php } else { echo "No Cointopay data found due to empty session values"; } //} else { echo "No Cointopay Data Found"; } ?>
 	    <?php } ?>
 <?php } ?>
 <a class="action primary" style="float: right;" href="<?= $this->getBaseUrl() ?>">Continue Shopping</a>
