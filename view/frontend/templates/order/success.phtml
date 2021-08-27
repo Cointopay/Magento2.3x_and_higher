@@ -68,20 +68,20 @@ $order = $block->getOrder();
 <div class="checkout-success">
 <?php if($order->getIncrementId()) {
 	$payment_gateway_code = $order->getPayment()->getMethodInstance()->getCode();
-    if ($block->getCustomerId()) { ?>
-        <p><?php echo __('Your order number is: <a href="'.$this->getBaseUrl().'sales/order/view/order_id/'.$order->getId().'">'. $order->getIncrementId().'</a>') ?>
-        </p>
-        <?php  } else { ?>
-            <p><?php echo __('Your order # is: <span>%1</span>.',$order->getIncrementId()) ?></p>
-        <?php } ?>
+    //if ($block->getCustomerId()) { ?>
+         <!--<p><?php //echo __('Your order number is: <a href="'.$this->getBaseUrl().'sales/order/view/order_id/'.$order->getId().'">'. $order->getIncrementId().'</a>') ?>
+        </p>-->
+        <?php  //} else { ?>
+             <!--<p><?php //echo __('Your order # is: <span>%1</span>.',$order->getIncrementId()) ?></p>-->
+        <?php //} ?>
         <?php if ($payment_gateway_code == 'cointopay_gateway') { ?>
             <p><?php echo __('Thank you for your order, please complete the payment below.') ?></p>
-        <?php } else { ?>
-            <p><?php echo __('We\'ll email you an order confirmation with details and tracking info.') ?></p>
-        <?php } ?>
+        <?php } //else { ?>
+           <!-- <p><?php //echo __('We\'ll email you an order confirmation with details and tracking info.') ?></p>-->
+        <?php //} ?>
         
 	    <!-- Cointopay popup Content -->
-        <?php if ($payment_gateway_code == 'cointopay_gateway') { ?>
+        <?php if ($payment_gateway_code == 'cointopay_gateway') { print_r( $block->getTransactionsIDD() ); ?>
 	        <?php $cointopay_content = $block->getCointopayHtml(); ?>
 	        <?php //if ($cointopay_content) {  $cointopay_content = $cointopay_content_data->data; 
 			      if ($cointopay_content) {?>
