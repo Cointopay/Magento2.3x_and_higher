@@ -120,7 +120,7 @@ class Thankyou extends \Magento\Sales\Block\Order\Totals
         }
         return false;*/
 		$objectManager =  \Magento\Framework\App\ObjectManager::getInstance(); 
-        $storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
+        /*$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
         $store = $storeManager->getStore();
         $baseUrl = $store->getBaseUrl();
         $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
@@ -129,11 +129,18 @@ class Thankyou extends \Magento\Sales\Block\Order\Totals
 		$this->transactionId = $orderObj->getExtOrderId();
 		$this->merchantId = $this->scopeConfig->getValue(self::XML_PATH_MERCHANT_ID, $storeScope);
         $this->merchantKey = $this->scopeConfig->getValue(self::XML_PATH_MERCHANT_KEY, $storeScope);
-        $this->_curlUrl = 'https://app.cointopay.com/v2REAPI?Call=Transactiondetail&MerchantID='.$this->merchantId.'&APIKey='.$this->merchantKey.'&TransactionID='.$this->transactionId.'&output=json';
+        $this->_curlUrl = 'https://cointopay.com/v2REAPI?Call=Transactiondetail&MerchantID='.$this->merchantId.'&APIKey=_&ConfirmCode='.$this->transactionId.'&output=json';
         $this->_curl->get($this->_curlUrl);
         $response = $this->_curl->getBody();
         return json_decode($response);
-		}
+		}*/
+		
+		$customerSession = $objectManager->get('Magento\Customer\Model\Session');
+        $cointopay_response = $customerSession->getCoinresponse();
+        if (isset($cointopay_response)) {
+            $customerSession->unsCoinresponse();
+            return json_decode($cointopay_response);
+        }
 		return false;
 		
     }
@@ -155,7 +162,7 @@ class Thankyou extends \Magento\Sales\Block\Order\Totals
 	{
 		
 		$objectManager =  \Magento\Framework\App\ObjectManager::getInstance(); 
-        $storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
+        /*$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
         $store = $storeManager->getStore();
         $baseUrl = $store->getBaseUrl();
         $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
@@ -168,7 +175,14 @@ class Thankyou extends \Magento\Sales\Block\Order\Totals
         $this->_curl->get($this->_curlUrl);
         $response = $this->_curl->getBody();
         return json_decode($response);
-		}
+		}*/
+		
+		$customerSession = $objectManager->get('Magento\Customer\Model\Session');
+        $cointopay_response = $customerSession->getCoinresponse();
+        if (isset($cointopay_response)) {
+            $customerSession->unsCoinresponse();
+            return json_decode($cointopay_response);
+        }
 		return false;
 	}
 }
