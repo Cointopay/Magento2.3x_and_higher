@@ -29,8 +29,13 @@ class Cart extends \Magento\Sales\Block\Order\Totals
 		$this->_cart = $_cart;
 		$this->_redirect = $redirect;
     }
+	
+	public function getOrder($order)
+    {
+		 return  $order;
+    }
 
-    public function getOrder($order)
+    public function getCointopayOrder($order)
     {
 		$quote=$this->_cart->getQuote();
 		$totalItems=count($quote->getAllItems());
@@ -41,7 +46,7 @@ class Cart extends \Magento\Sales\Block\Order\Totals
 		$order = $objectManager->create('\Magento\Sales\Model\Order')->load($orderId);
         return  $order;
 		}
-		return $order;
+		return false;
     }
 
     public function getCustomerId()
