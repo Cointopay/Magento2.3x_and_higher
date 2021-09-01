@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright © 2018 Cointopay. All rights reserved.
+ * Copyright Â© 2018 Cointopay. All rights reserved.
  * See COPYING.txt for license details.
  */
 namespace Cointopay\PaymentGateway\Block;
@@ -30,7 +30,7 @@ class Cart extends \Magento\Sales\Block\Order\Totals
 		$this->_redirect = $redirect;
     }
 
-    public function getOrder()
+    public function getOrder($order)
     {
 		$quote=$this->_cart->getQuote();
 		$totalItems=count($quote->getAllItems());
@@ -41,7 +41,7 @@ class Cart extends \Magento\Sales\Block\Order\Totals
 		$order = $objectManager->create('\Magento\Sales\Model\Order')->load($orderId);
         return  $order;
 		}
-		return false;
+		return $order;
     }
 
     public function getCustomerId()
