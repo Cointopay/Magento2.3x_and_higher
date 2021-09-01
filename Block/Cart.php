@@ -35,7 +35,7 @@ class Cart extends \Magento\Sales\Block\Order\Totals
 		 return  $order;
     }
 
-    public function getCointopayOrder($order)
+    public function getCointopayOrder()
     {
 		$quote=$this->_cart->getQuote();
 		$totalItems=count($quote->getAllItems());
