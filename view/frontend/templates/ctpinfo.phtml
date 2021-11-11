@@ -88,12 +88,14 @@ $order = $block->getOrder();
 		          	<div class="popup-content cointopay active">    
                         <img src="<?php echo $this->getViewFileUrl('Cointopay_PaymentGateway::images/cointopay.gif'); ?>" />
                         <h1> PAYMENT DETAILS </h1>
-			            <img src="<?= $cointopay_content->QRCodeURL ?>" alt="QR Scan Cointopay" />
+						<?php $qrcodeurl = file_get_contents($cointopay_content->QRCodeURL);?>
+						<img src="data:image/png;base64,<?= base64_encode($qrcodeurl) ?>" alt="Cointopay Transaction details are in progress please wait." title="QR Scan Cointopay" width="" />
 			            <div class="cointopay_details">
 				            <p class="remaining_amount"><strong>Amount:</strong><br>
                                 <?=  $cointopay_content->Amount.' ' ?>
                                 <?= strtoupper($cointopay_content->CoinName).' ' ?>
-                                <img src="https://s3-eu-west-1.amazonaws.com/cointopay/img/<?= $cointopay_content->CoinName ?>_dash2.png" style="width:20px;" />
+                                <?php $ctpcoinurl = file_get_contents('https://s3-eu-west-1.amazonaws.com/cointopay/img/'.$cointopay_content->CoinName.'_dash2.png');?>
+                                <img src="data:image/png;base64,<?= base64_encode($ctpcoinurl) ?>" style="width:20px;" />
 				            </p>
                             <p class="address"><strong>Address: </strong> <br> <input type="text" value="<?= $cointopay_content->coinAddress ?>"> </p>
 				            <p class="time"><strong>Expiry: </strong> <br><span id="expire_time"><?= date("m/d/Y h:i:s T",strtotime("+$cointopay_content->ExpiryTime minutes")) ?></span></p>
@@ -116,7 +118,7 @@ $order = $block->getOrder();
                                     selected_coin = $('#cointopay_trid').val();
                                     $.ajax ({
                                         url: '<?php echo $block->getCoinsPaymentUrl() ?>',
-                                        showLoader: true,
+                                        //showLoader: true,
                                         data: {paymentaction:selected_coin, type:'status'},
                                         type: "POST",
                                         success: function(result) {

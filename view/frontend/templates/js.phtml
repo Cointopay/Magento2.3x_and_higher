@@ -30,7 +30,7 @@
                         selected_coin = $('.cointopay_coin_val').val();
                         $.ajax ({
                             url: '<?php echo $this->getCoinsPaymentUrl() ?>',
-                            showLoader: true,
+                           showLoader: true,
                             data: {paymentaction:selected_coin, type:'order'},
                             type: "POST",
                             success: function(result) {

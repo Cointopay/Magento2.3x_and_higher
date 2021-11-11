@@ -5,7 +5,13 @@
  */
 namespace Cointopay\PaymentGateway\Block;
 
-class Thankyou extends \Magento\Sales\Block\Order\Totals
+use Magento\Cms\Api\BlockRepositoryInterface;
+use Magento\Cms\Api\Data\BlockInterface;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\View\Element\Template;
+use Magento\Framework\View\Element\Template\Context;
+
+class Thankyou extends Template
 {
     protected $checkoutSession;
     protected $customerSession;
@@ -71,16 +77,17 @@ class Thankyou extends \Magento\Sales\Block\Order\Totals
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Framework\View\Element\Template\Context $context,
         \Magento\Framework\Registry $registry,
 		\Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
 		\Magento\Framework\Session\SessionManagerInterface $coreSession,
         \Magento\Framework\HTTP\Client\Curl $curl,
 		\Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
+		BlockRepositoryInterface $blockRepository,
+        Context $context,
         array $data = []
     ) {
-        parent::__construct($context, $registry, $data);
+        parent::__construct($context, (array) $registry, $data);
         $this->checkoutSession = $checkoutSession;
         $this->customerSession = $customerSession;
         $this->_orderFactory = $orderFactory;

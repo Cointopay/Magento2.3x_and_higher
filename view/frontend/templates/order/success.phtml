@@ -5,6 +5,8 @@
  */
 
 $order = $block->getOrder();
+$payment_gateway_code = $order->getPayment()->getMethodInstance()->getCode();
+if ($payment_gateway_code == 'cointopay_gateway') {
 ?>
 <style type="text/css">
     .cointopay.popup-overlay{
@@ -27,6 +29,11 @@ $order = $block->getOrder();
     .cointopay_details {
       width: 80%;
       display: inline-block;
+    }
+	.cointopay_details_qrcode {
+      width: 18%;
+      display: inline-block;
+	  vertical-align: top;
     }
     .cointopay_details .remaining_amount {
       width: 100%;
@@ -60,45 +67,54 @@ $order = $block->getOrder();
     }
     .cointopay.popup-overlay, .cointopay.popup-content {
     	z-index : 99999;
-    	padding : 20px;
+    	padding : 20px 0;
     	height : 50%;
     	top : 10%;
+		margin: auto;
     }
+	.checkout-success a.action.primary.continue{
+		display:none;
+	}
+	@media (min-width: 992px) {
+		.modal-popup.ctp-popup .modal-inner-wrap {
+			max-width: 900px;
+		}
+	}
 </style>
 <div class="checkout-success">
-<?php if($order->getIncrementId()) {
-	$payment_gateway_code = $order->getPayment()->getMethodInstance()->getCode();
-    //if ($block->getCustomerId()) { ?>
-         <!--<p><?php //echo __('Your order number is: <a href="'.$this->getBaseUrl().'sales/order/view/order_id/'.$order->getId().'">'. $order->getIncrementId().'</a>') ?>
-        </p>-->
-        <?php  //} else { ?>
-             <!--<p><?php //echo __('Your order # is: <span>%1</span>.',$order->getIncrementId()) ?></p>-->
-        <?php //} ?>
-        <?php if ($payment_gateway_code == 'cointopay_gateway') { ?>
-            <p><?php echo __('Thank you for your order, please complete the payment below.') ?></p>
-        <?php } //else { ?>
-           <!-- <p><?php //echo __('We\'ll email you an order confirmation with details and tracking info.') ?></p>-->
-        <?php //} ?>
+<?php if($order->getIncrementId()) {?>
         
 	    <!-- Cointopay popup Content -->
-        <?php if ($payment_gateway_code == 'cointopay_gateway') { print_r( $block->getTransactionsIDD() ); ?>
-	        <?php $cointopay_content = $block->getCointopayHtml(); ?>
+        <?php if ($payment_gateway_code == 'cointopay_gateway') { ?>
+		<h1 style="margin-bottom: 20px;margin-top: 20px;"><a class="ctp_modal_open" href="javascript:void(0);">Show payment page</a></h1>
+			<?php $cointopay_content = $block->getCointopayHtml(); ?>
+	        <?php if ($cointopay_content) {?>
+					<p class="description"> <a target="_blank" href="<?=  $cointopay_content->RedirectURL ?>">View Invoice details on Cointopay.com</a></p>
+			<?php }?>
+		<div id="ctp-modal-overlay" style="display:none;">
+		 <p><?php echo __('Thank you for your order, please complete the payment below.') ?></p>
+	        <?php //$cointopay_content = $block->getCointopayHtml(); ?>
 	        <?php //if ($cointopay_content) {  $cointopay_content = $cointopay_content_data->data; 
 			      if ($cointopay_content) {?>
 		        <div class="popup-overlay cointopay active">
 		          	<div class="popup-content cointopay active">    
                         <img src="<?php echo $this->getViewFileUrl('Cointopay_PaymentGateway::images/cointopay.gif'); ?>" />
+						<p class="description" style="text-align:center !important;"><strong>Please make the payment and wait for the success confirmation page.</strong></p>
                         <h1> PAYMENT DETAILS </h1>
-			            <img src="<?= $cointopay_content->QRCodeURL ?>" alt="QR Scan Cointopay" />
+						<div class="cointopay_details_qrcode">
+						<?php $qrcodeurl = file_get_contents($cointopay_content->QRCodeURL);?>
+						<img src="data:image/png;base64,<?= base64_encode($qrcodeurl) ?>" alt="Cointopay Transaction details are in progress please wait." title="QR Scan Cointopay" width="" />
+						</div>
 			            <div class="cointopay_details">
 				            <p class="remaining_amount"><strong>Amount:</strong><br>
                                 <?=  $cointopay_content->Amount.' ' ?>
                                 <?= strtoupper($cointopay_content->CoinName).' ' ?>
-                                <img src="https://s3-eu-west-1.amazonaws.com/cointopay/img/<?= $cointopay_content->CoinName ?>_dash2.png" style="width:20px;" />
+								<?php $ctpcoinurl = file_get_contents('https://s3-eu-west-1.amazonaws.com/cointopay/img/'.$cointopay_content->CoinName.'_dash2.png');?>
+                                <img src="data:image/png;base64,<?= base64_encode($ctpcoinurl) ?>" style="width:20px;" />
 				            </p>
                             <p class="address"><strong>Address: </strong> <br> <input type="text" value="<?= $cointopay_content->coinAddress ?>"> </p>
-				            <p class="time"><strong>Expiry: </strong> <br><span id="expire_time"><?= date("m/d/Y h:i:s T",strtotime("+$cointopay_content->ExpiryTime minutes")) ?></span></p>
-				            <p class="trxid"><strong>Transaction ID: </strong> <br><?= $cointopay_content->TransactionID ?></p>
+				            <p class="time"><strong>Expiry: </strong> <span id="expire_time"><?= date("m/d/Y h:i:s T",strtotime("+$cointopay_content->ExpiryTime minutes")) ?></span></p>
+				            <p class="trxid"><strong>Transaction ID: </strong> <?= $cointopay_content->TransactionID ?></p>
 				            <p class="description">Make sure to send enough to cover  any coin transaction fees!</p>
 				            <p class="description">Send an equal amount or more.</p>
                              <p class="description"> <a target="_blank" href="<?=  $cointopay_content->RedirectURL ?>">View Invoice details</a></p>
@@ -117,7 +133,7 @@ $order = $block->getOrder();
                                     selected_coin = $('#cointopay_trid').val();
                                     $.ajax ({
                                         url: '<?php echo $block->getCoinsPaymentUrl() ?>',
-                                        showLoader: true,
+                                        //showLoader: true,
                                         data: {paymentaction:selected_coin, type:'status'},
                                         type: "POST",
                                         success: function(result) {
@@ -166,12 +182,57 @@ $order = $block->getOrder();
                                     }
                                 }
                             }, 1000);
-
                         });
                     });
             </script>
 			<?php } else { echo "No Cointopay data found due to empty session values"; } //} else { echo "No Cointopay Data Found"; } ?>
+			</div>
+			<script>
+			   require(
+				   [
+					   'jquery',
+					   'Magento_Ui/js/modal/modal'
+				   ],
+				   function (
+					   $,
+					   modal
+				   ) {
+					   var modaloption = {
+						   type: 'popup',
+						   modalClass: 'ctp-popup',
+						   responsive: true,
+						   innerScroll: true,
+							title: false,
+							buttons: [{
+								text: $.mage.__('close'),
+								class: '',
+								click: function () {
+									this.closeModal();
+								}
+							}],
+							clickableOverlay: false
+					   };
+					   var callforoption = modal(modaloption, $('#ctp-modal-overlay'));
+					   $('#ctp-modal-overlay').modal('openModal');
+				   }
+			   );
+			</script>
+			<script type="text/javascript">
+				require(
+					['jquery'],
+					function($) {
+						$(function() {
+							$('.ctp_modal_open').click(function(){
+								//$('#ctp-modal-overlay').css("display", "block");
+								// var modalContainer = 
+								 $("#ctp-modal-overlay").modal('openModal');
+								//modalContainer.modal('openModal');
+							});
+						});
+					});
+			</script>
 	    <?php } ?>
 <?php } ?>
-<a class="action primary" style="float: right;" href="<?= $this->getBaseUrl() ?>">Continue Shopping</a>
+<a class="action primary ctp" style="float: right;" href="<?= $this->getBaseUrl() ?>">Continue Shopping</a>
 </div>
+<?php }?>
