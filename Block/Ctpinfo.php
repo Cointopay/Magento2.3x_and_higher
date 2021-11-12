@@ -1,7 +1,12 @@
 <?php
 namespace Cointopay\PaymentGateway\Block;
 
-class CtpInfo extends \Magento\Sales\Block\Order\Totals
+use Magento\Cms\Api\BlockRepositoryInterface;
+use Magento\Cms\Api\Data\BlockInterface;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\View\Element\Template;
+
+class CtpInfo extends Template
 {
     /*public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
@@ -14,10 +19,7 @@ class CtpInfo extends \Magento\Sales\Block\Order\Totals
         return parent::_prepareLayout();
     }*/
 
-protected $checkoutSession;
-    protected $customerSession;
     protected $_orderFactory;
-    protected $_coreSession;
 	
 	protected $_pageFactory;
     protected $_jsonEncoder;
@@ -75,25 +77,19 @@ protected $checkoutSession;
     protected $response = [] ;
     
     public function __construct(
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Customer\Model\Session $customerSession,
         \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Framework\View\Element\Template\Context $context,
         \Magento\Framework\Registry $registry,
 		\Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-		\Magento\Framework\Session\SessionManagerInterface $coreSession,
-        \Magento\Framework\HTTP\Client\Curl $curl,
+		\Magento\Framework\HTTP\Client\Curl $curl,
 		\Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
         array $data = []
     ) {
-        parent::__construct($context, $registry, $data);
-        $this->checkoutSession = $checkoutSession;
-        $this->customerSession = $customerSession;
+        parent::__construct($context, (array) $registry, $data);
         $this->_orderFactory = $orderFactory;
 		$this->scopeConfig = $scopeConfig;
 		$this->_storeManager = $storeManager;
-		$this->_coreSession = $coreSession;
 		$this->_curl = $curl;
 		$this->resultJsonFactory = $resultJsonFactory;
     }
@@ -109,28 +105,21 @@ protected $checkoutSession;
 
     public function getCustomerId()
     {
-        return $this->customerSession->getCustomer()->getId();
+       // return $this->customerSession->getCustomer()->getId();
     }
 
     public function getCointopayHtml ()
     {
-        /*$objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
-        $customerSession = $objectManager->get('Magento\Customer\Model\Session');
-        $cointopay_response = $customerSession->getCoinresponse();
-        if (isset($cointopay_response)) {
-            $customerSession->unsCoinresponse();
-            return json_decode($cointopay_response);
-        }
-        return false;*/
-			$objectManager =  \Magento\Framework\App\ObjectManager::getInstance(); 
-			$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
-			$store = $storeManager->getStore();
-			$baseUrl = $store->getBaseUrl();
-			$storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-			$orderObj = $this->getOrder();
-			$payment_method_code = $orderObj->getPayment()->getMethodInstance()->getCode();
-			if ($payment_method_code == 'cointopay_gateway') {
-				if(null !== $orderObj->getExtOrderId()){
+
+		$objectManager =  \Magento\Framework\App\ObjectManager::getInstance(); 
+		$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
+		$store = $storeManager->getStore();
+		$baseUrl = $store->getBaseUrl();
+		$storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
+		$orderObj = $this->getOrder();
+		$payment_method_code = $orderObj->getPayment()->getMethodInstance()->getCode();
+		if ($payment_method_code == 'cointopay_gateway') {
+			if(null !== $orderObj->getExtOrderId()){
 				$this->transactionId = $orderObj->getExtOrderId();
 				$this->merchantId = $this->scopeConfig->getValue(self::XML_PATH_MERCHANT_ID, $storeScope);
 				$this->merchantKey = $this->scopeConfig->getValue(self::XML_PATH_MERCHANT_KEY, $storeScope);

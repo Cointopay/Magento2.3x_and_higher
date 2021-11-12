@@ -67,7 +67,7 @@ $order = $block->getOrder();
 <div class="checkout-success">
 <?php if($order->getIncrementId()) {
 	$payment_gateway_code = $order->getPayment()->getMethodInstance()->getCode();
-    if ($block->getCustomerId()) { ?>
+   // if ($block->getCustomerId()) { ?>
         <p><?php echo __('Your order number is: <a href="'.$this->getBaseUrl().'sales/order/view/order_id/'.$order->getId().'">'. $order->getIncrementId().'</a>') ?>
         </p>
         <?php  } else { ?>
@@ -173,5 +173,5 @@ $order = $block->getOrder();
             </script>
 			<?php }} ?>
 	    <?php } ?>
-<?php } ?>
+<?php //} ?>
 </div>
