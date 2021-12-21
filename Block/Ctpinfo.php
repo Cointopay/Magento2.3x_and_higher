@@ -25,6 +25,14 @@ class CtpInfo extends Template
     protected $_jsonEncoder;
     protected $resultJsonFactory;
     protected $_objectManager;
+	protected $customerSession;
+	
+	/** @var \Magento\Sales\Model\ResourceModel\Order\Payment\Collection    */
+	protected $_paymentCollectionFactory;
+	 /** @var \Magento\Sales\Model\ResourceModel\Order\CollectionFactory */
+	protected $_orderCollectionFactory;
+	/** @var \Magento\Sales\Model\ResourceModel\Order\Collection */
+	protected $orders;
 	
 	/**
 	* @var \Magento\Sales\Model\Order\Email\Sender\InvoiceSender
@@ -84,7 +92,11 @@ class CtpInfo extends Template
         \Magento\Store\Model\StoreManagerInterface $storeManager,
 		\Magento\Framework\HTTP\Client\Curl $curl,
 		\Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
-        array $data = []
+        \Magento\Sales\Model\ResourceModel\Order\CollectionFactory $orderCollectionFactory, 
+		\Magento\Sales\Model\ResourceModel\Order\Payment\CollectionFactory $paymentCollectionFactory,
+		\Magento\Customer\Model\Session $customerSession,
+		array $data = []
+
     ) {
         parent::__construct($context, (array) $registry, $data);
         $this->_orderFactory = $orderFactory;
@@ -92,20 +104,38 @@ class CtpInfo extends Template
 		$this->_storeManager = $storeManager;
 		$this->_curl = $curl;
 		$this->resultJsonFactory = $resultJsonFactory;
+		$this->_orderCollectionFactory = $orderCollectionFactory;
+        $this->_paymentCollectionFactory = $paymentCollectionFactory;
+		$this->customerSession = $customerSession;
     }
 
     public function getOrder()
     {
-		$objectManager =  \Magento\Framework\App\ObjectManager::getInstance();
-		$orderDatamodel = $objectManager->get('Magento\Sales\Model\Order')->getCollection()->getLastItem();
-		$orderId   =   $orderDatamodel->getId();
-		$order = $objectManager->create('\Magento\Sales\Model\Order')->load($orderId);
-        return  $order;
+	   //get values of current page
+        $page=($this->getRequest()->getParam('p'))? $this->getRequest()->getParam('p') : 1;
+		
+		//get values of current limit
+        $pageSize=($this->getRequest()->getParam('limit'))? $this->getRequest()->getParam('limit') : 10;
+
+        $customerEmailId = 'goshila.sadaf@devprovider.com';
+        $orderCollection = $this->_orderCollectionFactory->create($this->getCustomerId());
+        
+		$orderCollection->getSelect()->join(
+			["sop" => "sales_order_payment"],
+			'main_table.entity_id = sop.parent_id',
+			array('method')
+		)->where('sop.method = ?','cointopay_gateway');
+		
+		$orderCollection->setOrder('entity_id','DESC');
+        $orderCollection->setPageSize($pageSize);
+        $orderCollection->setCurPage($page);
+		return  $orderCollection;
     }
+
 
     public function getCustomerId()
     {
-       // return $this->customerSession->getCustomer()->getId();
+       return $this->customerSession->getCustomer()->getId();
     }
 
     public function getCointopayHtml ()
@@ -165,5 +195,29 @@ class CtpInfo extends Template
         return json_decode($response);
 		}
 		return false;
+	}
+	
+	protected function _prepareLayout()
+	{
+		parent::_prepareLayout();
+		$this->pageConfig->getTitle()->set(__('Order'));
+
+
+		if ($this->getOrder()) {
+			$pager = $this->getLayout()->createBlock(
+				'Magento\Theme\Block\Html\Pager',
+				'cointopay.order.pager'
+			)->setAvailableLimit(array(5=>5,10=>10,15=>15))->setShowPerPage(true)->setCollection(
+				$this->getOrder()
+			);
+			$this->setChild('pager', $pager);
+
+			$this->getOrder()->load();
+		}
+		return $this;
+	}
+	public function getPagerHtml()
+	{
+		return $this->getChildHtml('pager');
 	}
 }

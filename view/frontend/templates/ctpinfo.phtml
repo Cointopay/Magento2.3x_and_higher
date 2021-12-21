@@ -3,8 +3,45 @@
  * Copyright © 2018 Cointopay. All rights reserved.
  * See COPYING.txt for license details.
  */
-$order = $block->getOrder();
 ?>
+<div class="block-content">
+<div class="table-wrapper orders-recent">
+<?php if($block->getOrder()) {?>
+<table class="data table table-order-items recent" id="ctp-orders-table">
+<caption class="table-caption">Recent Orders</caption>
+<thead>
+<tr>
+<th scope="col" class="col id">Order #</th>
+<th scope="col" class="col date">Date</th>
+<th scope="col" class="col total">Order Total</th>
+<th scope="col" class="col status">Status</th>
+<th scope="col" class="col actions">Action</th>
+</tr>
+</thead>
+<tbody>
+<?php foreach($block->getOrder()->load() as $customerOrder) {?>
+<tr>
+<td data-th="Order #" class="col id"><?=$customerOrder['increment_id']?></td>
+<td data-th="Date" class="col date"><?=$customerOrder['created_at']?></td>
+<td data-th="Order Total" class="col total"><span class="price"><?=$customerOrder['grand_total']?></span></td>
+<td data-th="Status" class="col status"><?=$customerOrder['status']?></td>
+<td data-th="Actions" class="col actions">
+<a href="javascript:void(0)" data-ctp="<?=$customerOrder['ext_order_id']?>" class="action view ctp_popup_btn">
+<span>View Order</span>
+</a>
+</td>
+</tr>
+<?php }?>
+</tbody>
+</table>
+</div>
+<?php
+}
+if ($block->getPagerHtml()): ?>
+    <div class="order-products-toolbar toolbar bottom"><?= $block->getPagerHtml() ?></div>
+<?php else: ?>
+    <div class="message info empty"><span><?= /* @escapeNotVerified */ __('You have no cointopay invoices.') ?></span></div>
+<?php endif; ?>
 <style type="text/css">
     .cointopay.popup-overlay{
         visibility:hidden;
@@ -23,9 +60,15 @@ $order = $block->getOrder();
     .popup-content.active {
       visibility:visible;
     }
+	.cointopay_details_main {
+      display: flex;
+	  flex-direction: row;
+    }
     .cointopay_details {
       width: 80%;
-      display: inline-block;
+    }
+	.cointopay_details_qrcode {
+      width: 18%;
     }
     .cointopay_details .remaining_amount {
       width: 100%;
@@ -59,119 +102,67 @@ $order = $block->getOrder();
     }
     .cointopay.popup-overlay, .cointopay.popup-content {
     	z-index : 99999;
-    	padding : 20px;
+    	padding : 20px 0;
     	height : 50%;
     	top : 10%;
+		margin: auto;
     }
+	
+	@media (min-width: 992px) {
+		.modal-popup.ctp-popup .modal-inner-wrap {
+			max-width: 900px;
+		}
+	}
 </style>
-<div class="checkout-success">
-<?php if($order->getIncrementId()) {
-	$payment_gateway_code = $order->getPayment()->getMethodInstance()->getCode();
-   // if ($block->getCustomerId()) { ?>
-        <p><?php echo __('Your order number is: <a href="'.$this->getBaseUrl().'sales/order/view/order_id/'.$order->getId().'">'. $order->getIncrementId().'</a>') ?>
-        </p>
-        <?php  } else { ?>
-            <p><?php echo __('Your order # is: <span>%1</span>.',$order->getIncrementId()) ?></p>
-        <?php } ?>
-        <?php if ($payment_gateway_code == 'cointopay_gateway') { ?>
-            <p><?php echo __('Thank you for your order, please complete the payment below.') ?></p>
-        <?php } else { ?>
-            <p><?php echo __('We\'ll email you an order confirmation with details and tracking info.') ?></p>
-        <?php } ?>
-        
-	    <!-- Cointopay popup Content -->
-        <?php if ($payment_gateway_code == 'cointopay_gateway') { ?>
-	        <?php $cointopay_content_data = $block->getCointopayHtml(); ?>
-	        <?php if ($cointopay_content_data) {  $cointopay_content = $cointopay_content_data->data; 
-			      if ($cointopay_content) {?>
-		        <div class="popup-overlay cointopay active">
-		          	<div class="popup-content cointopay active">    
-                        <img src="<?php echo $this->getViewFileUrl('Cointopay_PaymentGateway::images/cointopay.gif'); ?>" />
-                        <h1> PAYMENT DETAILS </h1>
-						<?php $qrcodeurl = file_get_contents($cointopay_content->QRCodeURL);?>
-						<img src="data:image/png;base64,<?= base64_encode($qrcodeurl) ?>" alt="Cointopay Transaction details are in progress please wait." title="QR Scan Cointopay" width="" />
-			            <div class="cointopay_details">
-				            <p class="remaining_amount"><strong>Amount:</strong><br>
-                                <?=  $cointopay_content->Amount.' ' ?>
-                                <?= strtoupper($cointopay_content->CoinName).' ' ?>
-                                <?php $ctpcoinurl = file_get_contents('https://s3-eu-west-1.amazonaws.com/cointopay/img/'.$cointopay_content->CoinName.'_dash2.png');?>
-                                <img src="data:image/png;base64,<?= base64_encode($ctpcoinurl) ?>" style="width:20px;" />
-				            </p>
-                            <p class="address"><strong>Address: </strong> <br> <input type="text" value="<?= $cointopay_content->coinAddress ?>"> </p>
-				            <p class="time"><strong>Expiry: </strong> <br><span id="expire_time"><?= date("m/d/Y h:i:s T",strtotime("+$cointopay_content->ExpiryTime minutes")) ?></span></p>
-				            <p class="trxid"><strong>Transaction ID: </strong> <br><?= $cointopay_content->TransactionID ?></p>
-				            <p class="description">Make sure to send enough to cover  any coin transaction fees!</p>
-				            <p class="description">Send an equal amount or more.</p>
-                             <p class="description"> <a target="_blank" href="<?=  $cointopay_content->RedirectURL ?>">View Invoice details</a></p>
-				            <?php /* <button class="action primary confirm_payments" id="confirm_payments">Confirm Payments</button> */ ?>
-				            <input type="hidden" id="cointopay_trid" value="<?= $cointopay_content->TransactionID ?>" >
-			            </div>
-		          	</div>
-		        </div>
-            <script type="text/javascript">
+<div id="ctp-modal-overlay" style="display:none;"></div>
+<script type="text/javascript">
                 require(
-                    ['jquery'],
-                    function($) {
-                        $(function() {
-                            interval = setInterval(function() {
-                                if ($('#cointopay_trid').length) {
-                                    selected_coin = $('#cointopay_trid').val();
+                    [
+					'jquery',
+					   'Magento_Ui/js/modal/modal'
+					],
+                    function($,modal) {
+						 $(function() {
+                        $(document).on('click', '.ctp_popup_btn', function() {
+							    var ctpstr = '';
+								var modaloption = {
+						   type: 'popup',
+						   modalClass: 'ctp-popup',
+						   responsive: true,
+						   innerScroll: true,
+							title: false,
+							buttons: [{
+								text: $.mage.__('close'),
+								class: '',
+								click: function () {
+									this.closeModal();
+								}
+							}],
+							clickableOverlay: false
+					   };
+					   var callforoption = modal(modaloption, $('#ctp-modal-overlay'));
+                                if ($('#ctp-modal-overlay').length) {
+                                    selected_transaction_id = $(this).attr('data-ctp');
                                     $.ajax ({
-                                        url: '<?php echo $block->getCoinsPaymentUrl() ?>',
-                                        //showLoader: true,
-                                        data: {paymentaction:selected_coin, type:'status'},
+                                        url: '<?php echo $block->getCoinsPaymentUrl() ?>ctpinfo/cointopay',
+                                        showLoader: true,
+                                        data: {selected_transaction_id:selected_transaction_id},
                                         type: "POST",
                                         success: function(result) {
-                                            if (result.status == 'paid') {
-                                                $('.popup-content.cointopay').html('<h3>Thank you, your payment is received!</h3><p class="description"> <a target="_blank" href="<?=  $cointopay_content->RedirectURL ?>">View Invoice details</a></p>');
-                                            } else if (result.status == 'expired') {
-                                                $('.popup-content.cointopay').html('<h3>Payment time expired!</h3><p class="description"> <a target="_blank" href="<?=  $cointopay_content->RedirectURL ?>">View Invoice details</a></p>');
-                                            }
-											 else if (result.status == 'underpaid') {
-                                                $('.popup-content.cointopay').html('<h3>You have underpaid, please pay the remaining amount or contact support!</h3><p class="description"> <a target="_blank" href="<?=  $cointopay_content->RedirectURL ?>">View Invoice details</a></p>');
-                                            }
+											if (typeof result !== 'undefined') {
+											//if (typeof result !== 'object') {
+												//result = $.parseJSON(result);
+											//}
+											
+											console.log(result);
+											 $('#ctp-modal-overlay').html(result);
+											 $("#ctp-modal-overlay").modal('openModal');
                                         }
+										}
                                     });
                                 }
-                            }, 10000);
-                            
-                            // count down time left
-                            var d1 = new Date (),
-                            d2 = new Date ( d1 );
-                            d2.setMinutes ( d1.getMinutes() + <?= $cointopay_content->ExpiryTime ?> );
-                            var countDownDate = d2.getTime();
-
-                            // Update the count down every 1 second
-                            var x = setInterval(function() {
-                                if ($('#expire_time').length) {
-                                    // Get todays date and time
-                                    var now = new Date().getTime();
-                                    
-                                    // Find the distance between now an the count down date
-                                    var distance = countDownDate - now;
-                                    
-                                    // Time calculations for days, hours, minutes and seconds
-                                    var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                                    var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                                    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                                    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                                    
-                                    // Output the result in an element with id="expire_time"
-                                    document.getElementById("expire_time").innerHTML = days + "d " + hours + "h "
-                                    + minutes + "m " + seconds + "s ";
-                                    
-                                    // If the count down is over, write some text 
-                                    if (distance < 0) {
-                                        clearInterval(x);
-                                        document.getElementById("expire_time").innerHTML = "EXPIRED";
-                                    }
-                                }
-                            }, 1000);
-
                         });
                     });
+				});
             </script>
-			<?php }} ?>
-	    <?php } ?>
-<?php //} ?>
 </div>
