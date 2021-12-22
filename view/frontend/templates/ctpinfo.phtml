@@ -23,7 +23,7 @@
 <tr>
 <td data-th="Order #" class="col id"><?=$customerOrder['increment_id']?></td>
 <td data-th="Date" class="col date"><?=$customerOrder['created_at']?></td>
-<td data-th="Order Total" class="col total"><span class="price"><?=$customerOrder['grand_total']?></span></td>
+<td data-th="Order Total" class="col total"><span class="price"><?=round($customerOrder['grand_total'],2)?></span></td>
 <td data-th="Status" class="col status"><?=$customerOrder['status']?></td>
 <td data-th="Actions" class="col actions">
 <a href="javascript:void(0)" data-ctp="<?=$customerOrder['ext_order_id']?>" class="action view ctp_popup_btn">
