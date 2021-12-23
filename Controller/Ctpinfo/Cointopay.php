@@ -148,6 +148,7 @@ class Cointopay extends \Magento\Framework\App\Action\Action
 				$this->_curl->get($this->_curlUrl);
 				$response_body = $this->_curl->getBody();
 				$result = json_decode($response_body);
+				$result_ctp = $this->resultJsonFactory->create();
 				if ($result) {
 					if ($result->status_code == 200) {
 						$response = $result->data;
@@ -243,12 +244,12 @@ class Cointopay extends \Magento\Framework\App\Action\Action
 									});
 								});
 						</script>';
-						echo $this->_resultOutput; die;
+						return $result_ctp->setData(["ctpData" => $this->_resultOutput]);
 					} else {
-						echo $result->message; die;
+						return $result_ctp->setData(["ctpData" => $result->message]);
 					}
 				} else {
-					echo "No Cointopay data found due to empty session values"; die;
+					return $result_ctp->setData(["ctpData" => "No Cointopay data found due to empty session values"]);
 				}
 				 
 			}

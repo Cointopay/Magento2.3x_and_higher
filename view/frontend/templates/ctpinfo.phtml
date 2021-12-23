@@ -150,12 +150,12 @@ if ($block->getPagerHtml()): ?>
                                         type: "POST",
                                         success: function(result) {
 											if (typeof result !== 'undefined') {
-											//if (typeof result !== 'object') {
-												//result = $.parseJSON(result);
-											//}
+											if (typeof result !== 'object') {
+												result = $.parseJSON(result);
+											}
 											
-											console.log(result);
-											 $('#ctp-modal-overlay').html(result);
+											
+											 $('#ctp-modal-overlay').html(result.ctpData);
 											 $("#ctp-modal-overlay").modal('openModal');
                                         }
 										}
