@@ -164,14 +164,21 @@ class Cointopay extends \Magento\Framework\App\Action\Action
 							<div class="cointopay_details_main">
 							<div class="cointopay_details_qrcode">
 							<img src="data:image/png;base64,'. base64_encode(file_get_contents($response->QRCodeURL)) .'" alt="Cointopay Transaction details are in progress please wait." title="QR Scan Cointopay" width="" />
+							<img src="data:image/png;base64,'. base64_encode(file_get_contents('https://chart.googleapis.com/chart?chs=300&cht=qr&chl='.$response->coinAddress)) .'" alt="ctpCoinAdress" class="ctpCoinAdress" title="coinAddress" style="display:none;" width="" />
 							</div>
 							<div class="cointopay_details">
 								<p class="remaining_amount"><strong>Amount:</strong><br>
 								   '.  $response->Amount.' ' .'
 									'. strtoupper($response->CoinName).' ' .'
 									<img src="data:image/png;base64,'. base64_encode(file_get_contents('https://s3-eu-west-1.amazonaws.com/cointopay/img/'.$response->CoinName.'_dash2.png')) .'" style="width:20px;" />
-								</p>
-								<p class="address"><strong>Address: </strong> <br> <input type="text" value="'. $response->coinAddress .'"> </p>
+								</p>';
+								if (property_exists($response, 'Tag')) {
+									if (!empty($response->Tag)) {
+										$this->_resultOutput .= '<p class="description"><strong>Memo/Tag: </strong> '.$response->Tag.' </p>';
+									}
+								}
+								$this->_resultOutput .= '<p class="address"><strong>Address: </strong> <br> <input type="text" value="'. $response->coinAddress .'"> </p>
+								<p class="description"><button class="btn btn-success btnCrypto mb-2">CRYPTO LINK</button></p>
 								<p class="time"><strong>Expiry: </strong> <span id="expire_time">'. date("m/d/Y h:i:s T",strtotime("+".$response->ExpiryTime." minutes")) .'</span></p>
 								<p class="trxid"><strong>Transaction ID: </strong> '. $response->TransactionID .'</p>
 								<p class="description">Make sure to send enough to cover  any coin transaction fees!</p>
@@ -241,6 +248,20 @@ class Cointopay extends \Magento\Framework\App\Action\Action
 												}
 											}
 										}, 1000);
+										if ($(\'.btnCrypto\').length) {
+											$(\'.btnCrypto\').click(function(){
+												if ($(this).text() == \'CRYPTO LINK\') {
+													$(this).text(\'CRYPTO ADDRESS\');
+													$(\'.ctpQRcode\').hide();
+													$(\'.ctpCoinAdress\').show();
+												} else if ($(this).text() == \'CRYPTO ADDRESS\') {
+													$(this).text(\'CRYPTO LINK\');
+													$(\'.ctpCoinAdress\').hide();
+													$(\'.ctpQRcode\').show();
+												}
+												
+											});
+										}
 									});
 								});
 						</script>';

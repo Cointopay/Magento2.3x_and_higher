@@ -81,6 +81,51 @@ if ($payment_gateway_code == 'cointopay_gateway') {
 			max-width: 900px;
 		}
 	}
+	@media only screen and (max-width: 767px) {
+		.cointopay_details_main {
+			display: block;
+	   }
+	   .cointopay.popup-overlay {
+			padding: 15px !important;
+		}
+		.cointopay_details {
+		  width: 100%;
+		}
+		.cointopay_details_qrcode {
+		  width: 100%;
+		}
+		.cointopay_details p {
+			text-align:center !important;
+			font-size:11px !important;
+		}
+		.cointopay_details .address input {
+			font-size:8.8px !important;
+		}
+		.modal-popup.ctp-popup .modal-content{
+			padding-left: 1rem;
+			padding-right: 1rem;
+		}
+		.modal-popup.modal-slide {
+			width: 90%;
+			right: 0;
+			left: 0;
+			margin: auto;
+		}
+		.modal-popup.ctp-popup .modal-footer {
+			padding-bottom: 0;
+			padding-top: 0;
+			text-align: center;
+		}
+		.modal-popup.ctp-popup .modal-content {
+			padding-bottom: 10px;
+		}
+		.cointopay.popup-content {
+			padding: 0;
+		}
+		#ctp-modal-overlay > p {
+			text-align:center !important;
+		}
+	}
 </style>
 <div class="checkout-success">
 <?php if($order->getIncrementId()) {?>
@@ -105,7 +150,9 @@ if ($payment_gateway_code == 'cointopay_gateway') {
 						<div class="cointopay_details_main">
 							<div class="cointopay_details_qrcode">
 								<?php $qrcodeurl = file_get_contents($cointopay_content->QRCodeURL);?>
-								<img src="data:image/png;base64,<?= base64_encode($qrcodeurl) ?>" alt="Cointopay Transaction details are in progress please wait." title="QR Scan Cointopay" width="" />
+								<img src="data:image/png;base64,<?= base64_encode($qrcodeurl) ?>" alt="Cointopay Transaction details are in progress please wait." class="ctpQRcode" title="QR Scan Cointopay" width="" />
+								<?php $qrcodeurlCoin = file_get_contents('https://chart.googleapis.com/chart?chs=300&cht=qr&chl='.$cointopay_content->coinAddress);?>
+								<img src="data:image/png;base64,<?= base64_encode($qrcodeurlCoin) ?>" alt="ctpCoinAdress" class="ctpCoinAdress" title="coinAddress" style="display:none;" width="" />
 							</div>
 							<div class="cointopay_details">
 								<p class="remaining_amount"><strong>Amount:</strong><br>
@@ -114,7 +161,13 @@ if ($payment_gateway_code == 'cointopay_gateway') {
 									<?php $ctpcoinurl = file_get_contents('https://s3-eu-west-1.amazonaws.com/cointopay/img/'.$cointopay_content->CoinName.'_dash2.png');?>
 									<img src="data:image/png;base64,<?= base64_encode($ctpcoinurl) ?>" style="width:20px;" />
 								</p>
+								<?php if (property_exists($cointopay_content, 'Tag')) {
+									if (!empty($cointopay_content->Tag)) {
+								?>
+								<p class="description"><strong>Memo/Tag: </strong> <?= $cointopay_content->Tag ?> </p>
+								<?php }}?>
 								<p class="address"><strong>Address: </strong> <br> <input type="text" value="<?= $cointopay_content->coinAddress ?>"> </p>
+								<p class="description"><button class="btn btn-success btnCrypto mb-2">CRYPTO LINK</button></p>
 								<p class="time"><strong>Expiry: </strong> <span id="expire_time"><?= date("m/d/Y h:i:s T",strtotime("+$cointopay_content->ExpiryTime minutes")) ?></span></p>
 								<p class="trxid"><strong>Transaction ID: </strong> <?= $cointopay_content->TransactionID ?></p>
 								<p class="description">Make sure to send enough to cover  any coin transaction fees!</p>
@@ -231,6 +284,20 @@ if ($payment_gateway_code == 'cointopay_gateway') {
 								 $("#ctp-modal-overlay").modal('openModal');
 								//modalContainer.modal('openModal');
 							});
+							if ($('.btnCrypto').length) {
+								$('.btnCrypto').click(function(){
+									if ($(this).text() == 'CRYPTO LINK') {
+										$(this).text('CRYPTO ADDRESS');
+										$('.ctpQRcode').hide();
+										$('.ctpCoinAdress').show();
+									} else if ($(this).text() == 'CRYPTO ADDRESS') {
+										$(this).text('CRYPTO LINK');
+										$('.ctpCoinAdress').hide();
+										$('.ctpQRcode').show();
+									}
+									
+								});
+							}
 						});
 					});
 			</script>
