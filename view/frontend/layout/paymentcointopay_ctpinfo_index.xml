@@ -6,7 +6,7 @@
     </head>
     <body>
         <referenceContainer name="content">
-            <block class="Cointopay\PaymentGateway\Block\Ctpinfo" name="customer.account.ctpinfo" template="Cointopay_PaymentGateway::ctpinfo.phtml" cacheable="false"></block>
+            <block class="Cointopay\PaymentGateway\Block\Ctpinfo" name="customer.account.ctpinfo" template="Cointopay_PaymentGateway::ctpinfo.phtml"></block>
         </referenceContainer>
     </body>
 </page>
