@@ -117,7 +117,6 @@ class CtpInfo extends Template
 		//get values of current limit
         $pageSize=($this->getRequest()->getParam('limit'))? $this->getRequest()->getParam('limit') : 10;
 
-        $customerEmailId = 'goshila.sadaf@devprovider.com';
         $orderCollection = $this->_orderCollectionFactory->create($this->getCustomerId());
         
 		$orderCollection->getSelect()->join(
