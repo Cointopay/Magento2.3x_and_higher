@@ -17,7 +17,7 @@ class Index extends Action {
     public function execute()
     {
         $this->_view->loadLayout();
-        $this->_view->getPage()->getConfig()->getTitle()->set(__('Cointopay Invoice Detail'));
+        $this->_view->getPage()->getConfig()->getTitle()->set(__('Cointopay Crypto Invoice Detail'));
         $this->_view->renderLayout();
     }
 }
