@@ -166,7 +166,7 @@ if ($payment_gateway_code == 'cointopay_gateway') {
 								?>
 								<p class="description"><strong>Memo/Tag: </strong> <?= $cointopay_content->Tag ?> </p>
 								<?php }}?>
-								<p class="address"><strong>Address: </strong> <br> <input type="text" value="<?= $cointopay_content->coinAddress ?>"> </p>
+								<p class="address"><strong>Address: </strong> <br> <input type="text" value="<?= $cointopay_content->coinAddress ?>" style="width: 100%;" /> </p>
 								<p class="description"><button class="btn btn-success btnCrypto mb-2">CRYPTO LINK</button></p>
 								<p class="time"><strong>Expiry: </strong> <span id="expire_time"><?= date("m/d/Y h:i:s T",strtotime("+$cointopay_content->ExpiryTime minutes")) ?></span></p>
 								<p class="trxid"><strong>Transaction ID: </strong> <?= $cointopay_content->TransactionID ?></p>
@@ -174,7 +174,7 @@ if ($payment_gateway_code == 'cointopay_gateway') {
 								<p class="description">Send an equal amount or more.</p>
 								 <p class="description"> <a target="_blank" href="<?=  $cointopay_content->RedirectURL ?>">View Invoice details</a></p>
 								<?php /* <button class="action primary confirm_payments" id="confirm_payments">Confirm Payments</button> */ ?>
-								<input type="hidden" id="cointopay_trid" value="<?= $cointopay_content->TransactionID ?>" >
+								<input type="hidden" id="cointopay_trid" value="<?= $cointopay_content->TransactionID ?>" />
 							</div>
 						</div>
 		          	</div>

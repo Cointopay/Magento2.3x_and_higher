@@ -177,14 +177,14 @@ class Cointopay extends \Magento\Framework\App\Action\Action
 										$this->_resultOutput .= '<p class="description"><strong>Memo/Tag: </strong> '.$response->Tag.' </p>';
 									}
 								}
-								$this->_resultOutput .= '<p class="address"><strong>Address: </strong> <br> <input type="text" value="'. $response->coinAddress .'"> </p>
+								$this->_resultOutput .= '<p class="address"><strong>Address: </strong> <br> <input type="text" value="'. $response->coinAddress .'" style="width: 100%;" /> </p>
 								<p class="description"><button class="btn btn-success btnCrypto mb-2">CRYPTO LINK</button></p>
 								<p class="time"><strong>Expiry: </strong> <span id="expire_time">'. date("m/d/Y h:i:s T",strtotime("+".$response->ExpiryTime." minutes")) .'</span></p>
 								<p class="trxid"><strong>Transaction ID: </strong> '. $response->TransactionID .'</p>
 								<p class="description">Make sure to send enough to cover  any coin transaction fees!</p>
 								<p class="description">Send an equal amount or more.</p>
 								 <p class="description"> <a target="_blank" href="'.  $response->RedirectURL .'">View Invoice details</a></p>
-								<input type="hidden" id="cointopay_trid" value="'. $response->TransactionID .'" >
+								<input type="hidden" id="cointopay_trid" value="'. $response->TransactionID .'" />
 							</div>
 							</div>
 						</div>
