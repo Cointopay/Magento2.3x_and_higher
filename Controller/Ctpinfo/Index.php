@@ -16,6 +16,15 @@ class Index extends Action {
     }
     public function execute()
     {
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $customerSession = $objectManager->get('Magento\Customer\Model\Session');
+        $resultRedirect = $objectManager->get('Magento\Framework\Controller\Result\RedirectFactory');
+        $resultRedirect_obj = $resultRedirect->create();
+        if (!$customerSession->isLoggedIn()){
+          $resultRedirect_obj->setPath('customer/account/login');
+          return $resultRedirect_obj;
+        }
+
         $this->_view->loadLayout();
         $this->_view->getPage()->getConfig()->getTitle()->set(__('Cointopay Crypto Invoice Detail'));
         $this->_view->renderLayout();
