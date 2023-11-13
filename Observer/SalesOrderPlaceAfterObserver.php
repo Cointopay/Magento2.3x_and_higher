@@ -123,6 +123,7 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
     **/
     protected $orderStatus;
 
+    protected $_response;
 
     public function __construct (
         \Psr\Log\LoggerInterface $logger,
@@ -155,7 +156,7 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
         $this->_historyFactory = $historyFactory;
         $this->_coreSession = $coreSession;
         $this->_orderFactory = $orderFactory;
-		$this->_response = $_response;
+	$this->_response = $_response;
         $this->_urlRewrite = $urlRewrite;
         $this->_urlRewriteFactory = $urlRewriteFactory;
         $this->urlFinder = $urlFinder;
