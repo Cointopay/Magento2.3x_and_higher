@@ -124,7 +124,7 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
     protected $orderStatus;
 
     protected $_response;
-    protected $urlRewrite;
+    protected $_urlRewrite;
 
     public function __construct (
         \Psr\Log\LoggerInterface $logger,
@@ -140,7 +140,7 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
         \Magento\Framework\Session\SessionManagerInterface $coreSession,
         \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Framework\App\ResponseFactory $_response,
-        \Magento\UrlRewrite\Model\UrlRewrite $urlRewrite,
+        \Magento\UrlRewrite\Model\UrlRewrite $_urlRewrite,
         \Magento\UrlRewrite\Model\UrlRewriteFactory $urlRewriteFactory,
         \Magento\UrlRewrite\Model\UrlFinderInterface $urlFinder    
 	)
@@ -158,7 +158,7 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
         $this->_coreSession = $coreSession;
         $this->_orderFactory = $orderFactory;
 	$this->_response = $_response;
-        $this->_urlRewrite = $urlRewrite;
+        $this->_urlRewrite = $_urlRewrite;
         $this->_urlRewriteFactory = $urlRewriteFactory;
         $this->urlFinder = $urlFinder;
     }
