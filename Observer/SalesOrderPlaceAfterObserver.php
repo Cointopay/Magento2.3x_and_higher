@@ -118,13 +118,15 @@ class SalesOrderPlaceAfterObserver implements ObserverInterface
     */
     protected $_cookieManager;
 	
-	/**
+    /**
     * @var $paidStatus
     **/
     protected $orderStatus;
 
     protected $_response;
     protected $_urlRewrite;
+    protected $urlRewriteFactory;
+    protected $urlFinder;
 
     public function __construct (
         \Psr\Log\LoggerInterface $logger,
