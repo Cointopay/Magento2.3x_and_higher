@@ -15,8 +15,9 @@ class Index extends \Magento\Framework\App\Action\Action
     protected $_jsonEncoder;
     protected $orderManagement;
     protected $resultJsonFactory;
-	protected $resultFactory;
-	
+    protected $resultFactory;
+    protected $invoice;
+
 	/**
 	* @var \Magento\Sales\Model\Order\Email\Sender\InvoiceSender
 	*/
