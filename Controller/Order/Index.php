@@ -203,16 +203,16 @@ class Index extends \Magento\Framework\App\Action\Action
 							return $result;
 					} else if ($status == 'paid') {
 						if ($order->canInvoice()) {
-							$invoice = $order->prepareInvoice();
-							$invoice->getOrder()->setIsInProcess(true);
-							$invoice->register()->pay();
-							$invoice->save();
+							$this->invoice = $order->prepareInvoice();
+							$this->invoice->getOrder()->setIsInProcess(true);
+							$this->invoice->register()->pay();
+							$this->invoice->save();
 						}
 
 						$order->setState($this->paidStatus)->setStatus($this->paidStatus);
 						$order->save();
 						if ($order->canInvoice()) {
-							$this->invoiceSender->send($invoice);
+							$this->invoiceSender->send($this->invoice);
 						}
 						
 					} else if ($status == 'failed') {
