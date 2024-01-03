@@ -160,6 +160,7 @@ if ($payment_gateway_code == 'cointopay_gateway') {
 									<?= strtoupper($cointopay_content->CoinName).' ' ?>
 									<?php $ctpcoinurl = file_get_contents('https://s3-eu-west-1.amazonaws.com/cointopay/img/'.$cointopay_content->CoinName.'_dash2.png');?>
 									<img src="data:image/png;base64,<?= base64_encode($ctpcoinurl) ?>" style="width:20px;" />
+						       			(<?=  $cointopay_content->ChainName.' ' ?> Network)
 								</p>
 								<?php if (property_exists($cointopay_content, 'Tag')) {
 									if (!empty($cointopay_content->Tag)) {
