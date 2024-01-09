@@ -151,7 +151,7 @@ if ($payment_gateway_code == 'cointopay_gateway') {
 							<div class="cointopay_details_qrcode">
 								<?php $qrcodeurl = file_get_contents($cointopay_content->QRCodeURL);?>
 								<img src="data:image/png;base64,<?= base64_encode($qrcodeurl) ?>" alt="Cointopay Transaction details are in progress please wait." class="ctpQRcode" title="QR Scan Cointopay" width="" />
-								<?php $qrcodeurlCoin = file_get_contents('https://chart.googleapis.com/chart?chs=300&cht=qr&chl='.$cointopay_content->coinAddress);?>
+								<?php $qrcodeurlCoin = file_get_contents('https://quickchart.io/qr?size=300&text='.$cointopay_content->coinAddress);?>
 								<img src="data:image/png;base64,<?= base64_encode($qrcodeurlCoin) ?>" alt="ctpCoinAdress" class="ctpCoinAdress" title="coinAddress" style="display:none;" width="" />
 							</div>
 							<div class="cointopay_details">
