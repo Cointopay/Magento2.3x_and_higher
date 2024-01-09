@@ -149,10 +149,14 @@ if ($payment_gateway_code == 'cointopay_gateway') {
                         <h1> PAYMENT DETAILS </h1>
 						<div class="cointopay_details_main">
 							<div class="cointopay_details_qrcode">
+								<?php if (file_exists($cointopay_content->QRCodeURL)) {?>
 								<?php $qrcodeurl = file_get_contents($cointopay_content->QRCodeURL);?>
-								<img src="data:image/png;base64,<?= base64_encode($qrcodeurl) ?>" alt="Cointopay Transaction details are in progress please wait." class="ctpQRcode" title="QR Scan Cointopay" width="" />
+									<img src="data:image/png;base64,<?= base64_encode($qrcodeurl) ?>" alt="Cointopay Transaction details are in progress please wait." class="ctpQRcode" title="QR Scan Cointopay" width="" />
+								<?php }?>
+								<?php if (file_exists('https://quickchart.io/qr?size=300&text='.$cointopay_content->coinAddress)) {?>
 								<?php $qrcodeurlCoin = file_get_contents('https://quickchart.io/qr?size=300&text='.$cointopay_content->coinAddress);?>
-								<img src="data:image/png;base64,<?= base64_encode($qrcodeurlCoin) ?>" alt="ctpCoinAdress" class="ctpCoinAdress" title="coinAddress" style="display:none;" width="" />
+									<img src="data:image/png;base64,<?= base64_encode($qrcodeurlCoin) ?>" alt="ctpCoinAdress" class="ctpCoinAdress" title="coinAddress" style="display:none;" width="" />
+								<?php }?>
 							</div>
 							<div class="cointopay_details">
 								<p class="remaining_amount"><strong>Amount:</strong><br>
