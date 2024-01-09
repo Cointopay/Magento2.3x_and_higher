@@ -164,7 +164,7 @@ class Cointopay extends \Magento\Framework\App\Action\Action
 							<div class="cointopay_details_main">
 							<div class="cointopay_details_qrcode">
 							<img src="data:image/png;base64,'. base64_encode(file_get_contents($response->QRCodeURL)) .'" alt="Cointopay Transaction details are in progress please wait." title="QR Scan Cointopay" class="ctpQRcode" width="" />
-							<img src="data:image/png;base64,'. base64_encode(file_get_contents('https://chart.googleapis.com/chart?chs=300&cht=qr&chl='.$response->coinAddress)) .'" alt="ctpCoinAdress" class="ctpCoinAdress" title="coinAddress" style="display:none;" width="" />
+							<img src="data:image/png;base64,'. base64_encode(file_get_contents('https://quickchart.io/qr?size=300&text='.$response->coinAddress)) .'" alt="ctpCoinAdress" class="ctpCoinAdress" title="coinAddress" style="display:none;" width="" />
 							</div>
 							<div class="cointopay_details">
 								<p class="remaining_amount"><strong>Amount:</strong><br>
