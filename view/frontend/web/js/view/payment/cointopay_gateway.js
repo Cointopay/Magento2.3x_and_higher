@@ -16,27 +16,35 @@ define(
         $
     ) {
         'use strict';
-        $(function() {
-            $(document).on('change', ".cointopay_coin_val", function () {
-                var coinVal = $(this).val();
-                    $.ajax ({
-                        url: '/paymentcointopay/coin/',
-                        showLoader: true,
-                        data: {coinId:coinVal, type:'security'},
-                        type: "POST",
-                        success: function(result) {
-                            
-                        }
-                    });
-                });
-            });
+        $(
+            function () {
+                $(document).on(
+                    'change',
+                    ".cointopay_coin_val",
+                    function () {
+                        var coinVal = $(this).val();
+                        $.ajax(
+                            {
+                                url: '/paymentcointopay/coin/',
+                                showLoader: true,
+                                data: {coinId:coinVal, type:'security'},
+                                type: "POST",
+                                success: function (result) {}
+                            }
+                        );
+                    }
+                );
+            }
+        );
         rendererList.push(
             {
                 type: 'cointopay_gateway',
                 component: 'Cointopay_PaymentGateway/js/view/payment/method-renderer/cointopay_gateway'
             }
         );
-        /** Add view logic here if needed */
+        /**
+    * Add view logic here if needed
+    */
         return Component.extend({});
     }
 );

@@ -2,7 +2,11 @@
 /**
  * Copyright © 2018 Cointopay. All rights reserved.
  * See COPYING.txt for license details.
+ *
+ * @author  cointopay <info@cointopay.com>
+ * @license See COPYING.txt for license details.
  */
+
 namespace Cointopay\PaymentGateway\Gateway\Request;
 
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
@@ -11,31 +15,32 @@ use Cointopay\PaymentGateway\Gateway\Http\Client\ClientMock;
 
 class MockDataRequest implements BuilderInterface
 {
-    const FORCE_RESULT = 'FORCE_RESULT';
+    public const FORCE_RESULT = 'FORCE_RESULT';
 
     /**
      * Builds ENV request
      *
-     * @param array $buildSubject
+     * @param array $buildSubject Subject
+     *
      * @return array
      */
     public function build(array $buildSubject)
     {
-        if (!isset($buildSubject['payment'])
-            || !$buildSubject['payment'] instanceof PaymentDataObjectInterface
+        if (isset($buildSubject['payment']) === false
+            || $buildSubject['payment'] === false instanceof PaymentDataObjectInterface
         ) {
             throw new \InvalidArgumentException('Payment data object should be provided');
         }
 
-        /** @var PaymentDataObjectInterface $paymentDO */
         $paymentDO = $buildSubject['payment'];
-        $payment = $paymentDO->getPayment();
+        $payment   = $paymentDO->getPayment();
 
         $transactionResult = $payment->getAdditionalInformation('transaction_result');
-        return [
-            self::FORCE_RESULT => $transactionResult === null
-                ? ClientMock::SUCCESS
-                : $transactionResult
-        ];
-    }
-}
+        $result            = $transactionResult;
+        if ($transactionResult === null) {
+            $result = ClientMock::SUCCESS;
+        }
+
+        return [self::FORCE_RESULT => $result];
+    }//end build()
+}//end class

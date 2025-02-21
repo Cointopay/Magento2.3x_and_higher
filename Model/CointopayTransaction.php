@@ -1,158 +1,206 @@
-<?php 
+<?php
 namespace Cointopay\PaymentGateway\Model;
- 
- 
-class CointopayTransaction{
-	
-    protected $_context;
-    protected $_pageFactory;
+
+class CointopayTransaction
+{
+
+     /**
+      * Context variable
+      *
+      * @var Context
+      */
+    protected $context;
+
+    /**
+     * @var \Magento\Framework\Json\EncoderInterface
+     */
     protected $_jsonEncoder;
+
+    /**
+     * @var \Magento\Framework\Session\SessionManagerInterface
+     */
     protected $_coreSession;
-    protected $resultJsonFactory;
-    protected $_objectManager;
-    protected $_checkoutSession;
-    protected $_orderFactory;
+
+    /**
+     * @var \Magento\Framework\Json\DecoderInterface
+     */
     protected $_jsonDecoder;
-	
-	/**
-	* @var \Magento\Sales\Model\Order\Email\Sender\InvoiceSender
-	*/
+
+    /**
+     * JsonFactory variable
+     *
+     * @var JsonFactory
+     */
+    protected $resultJsonFactory;
+
+    /**
+     * ObjectManagerInterface variable
+     *
+     * @var ObjectManagerInterface
+     */
+    protected $_objectManager;
+
+    /**
+     * Session variable
+     *
+     * @var Session
+     */
+    protected $_checkoutSession;
+
+    /**
+     * OrderFactory variable
+     *
+     * @var OrderFactory
+     */
+    protected $_orderFactory;
+
+    /**
+     * @var \Magento\Sales\Model\Order\Email\Sender\InvoiceSender
+     */
     protected $invoiceSender;
 
     /**
-   * @var \Magento\Framework\App\Config\ScopeConfigInterface
-   */
-   protected $scopeConfig;
+     * @var \Magento\Framework\App\Config\ScopeConfigInterface
+     */
+    protected $scopeConfig;
 
     /**
-    * @var \Magento\Framework\HTTP\Client\Curl
-    */
+     * @var \Magento\Framework\HTTP\Client\Curl
+     */
     protected $_curl;
 
     /**
-    * @var $merchantId
-    **/
+     * @var $merchantId
+     **/
     protected $merchantId;
 
     /**
-    * @var $merchantKey
-    **/
+     * @var $merchantKey
+     **/
     protected $merchantKey;
 
     /**
-    * @var $coinId
-    **/
+     * @var $coinId
+     **/
     protected $coinId;
 
     /**
-    * @var $type
-    **/
+     * @var $type
+     **/
     protected $type;
 
     /**
-    * @var $orderTotal
-    **/
+     * @var $orderTotal
+     **/
     protected $orderTotal;
 
     /**
-    * @var $_curlUrl
-    **/
+     * @var $_curlUrl
+     **/
     protected $_curlUrl;
 
     /**
-    * @var currencyCode
-    **/
+     * @var currencyCode
+     **/
     protected $currencyCode;
 
     /**
-    * @var $_storeManager
-    **/
+     * @var $_storeManager
+     **/
     protected $_storeManager;
-    
+
     /**
-    * @var $securityKey
-    **/
+     * @var $securityKey
+     **/
     protected $securityKey;
-	
-	/**
-    * @var $paidStatus
-    **/
+
+    /**
+     * @var $paidStatus
+     **/
     protected $paidStatus;
 
     /**
-    * Merchant ID
-    */
-    const XML_PATH_MERCHANT_ID = 'payment/cointopay_gateway/merchant_gateway_id';
+     * Merchant ID
+     */
+    protected const XML_PATH_MERCHANT_ID = 'payment/cointopay_gateway/merchant_gateway_id';
 
     /**
-    * Merchant COINTOPAY API Key
-    */
-    const XML_PATH_MERCHANT_KEY = 'payment/cointopay_gateway/merchant_gateway_api_key';
+     * Merchant COINTOPAY API Key
+     */
+    protected const XML_PATH_MERCHANT_KEY = 'payment/cointopay_gateway/merchant_gateway_api_key';
 
     /**
-    * Merchant COINTOPAY SECURITY Key
-    */
-    const XML_PATH_MERCHANT_SECURITY = 'payment/cointopay_gateway/merchant_gateway_security';
-	
-	/**
-    * Merchant COINTOPAY SECURITY Key
-    */
-    const XML_PATH_PAID_ORDER_STATUS = 'payment/cointopay_gateway/order_status_paid';
+     * Merchant COINTOPAY SECURITY Key
+     */
+    protected const XML_PATH_MERCHANT_SECURITY = 'payment/cointopay_gateway/merchant_gateway_security';
 
     /**
-    * API URL
-    **/
-    const COIN_TO_PAY_API = 'https://cointopay.com/MerchantAPI';
-
+     * Merchant COINTOPAY SECURITY Key
+     */
+    protected const XML_PATH_PAID_ORDER_STATUS = 'payment/cointopay_gateway/order_status_paid';
 
     /**
-    * @var \Magento\Framework\Registry
-    */
+     * API URL
+     **/
+    protected const COIN_TO_PAY_API = 'https://cointopay.com/MerchantAPI';
+
+    /**
+     * @var \Magento\Framework\Registry
+     */
     protected $_registry;
-	
-	/*
-    * @param \Magento\Framework\App\Action\Context $context
-    * @param \Magento\Framework\App\Config\ScopeConfigInterface    $scopeConfig
-    * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-		* @param \Magento\Framework\Controller\Result\JsonFactory $jsonResultFactory
-    */
-    public function __construct (
-	    \Magento\Framework\App\Action\Context $context,
+
+    /**
+     * @param \Magento\Framework\App\Action\Context $context
+     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param \Magento\Framework\Session\SessionManagerInterface $coreSession
+     * @param \Magento\Framework\HTTP\Client\Curl $curl
+     * @param \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory
+     * @param \Magento\Framework\Json\EncoderInterface $encoder
+     * @param \Magento\Framework\Json\DecoderInterface $decoder
+     */
+    public function __construct(
+        \Magento\Framework\App\Action\Context $context,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-		\Magento\Framework\Session\SessionManagerInterface $coreSession,
+        \Magento\Framework\Session\SessionManagerInterface $coreSession,
         \Magento\Framework\HTTP\Client\Curl $curl,
-		\Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
-		\Magento\Framework\Json\EncoderInterface $encoder,
+        \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
+        \Magento\Framework\Json\EncoderInterface $encoder,
         \Magento\Framework\Json\DecoderInterface $decoder
-	) {
-		$this->_context = $context;
-        $this->scopeConfig = $scopeConfig;
-		$this->_storeManager = $storeManager;
-		$this->_coreSession = $coreSession;
-		$this->_curl = $curl;
-		$this->resultJsonFactory = $resultJsonFactory;
-		$this->_jsonEncoder = $encoder;
-        $this->_jsonDecoder = $decoder;
-    }
+    ) {
+        $this->context      = $context;
+        $this->scopeConfig   = $scopeConfig;
+        $this->_storeManager = $storeManager;
+        $this->_coreSession  = $coreSession;
+        $this->_curl         = $curl;
+        $this->resultJsonFactory = $resultJsonFactory;
+        $this->_jsonEncoder      = $encoder;
+        $this->_jsonDecoder      = $decoder;
+    }//end __construct()
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function getTransactions($id)
-	{
-		
-		$objectManager =  \Magento\Framework\App\ObjectManager::getInstance(); 
-        $storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
-        $store = $storeManager->getStore();
-        $baseUrl = $store->getBaseUrl();
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
+    /**
+     * Get Transaction Details
+     *
+     * @param int $id
+     * @return array
+     */
+    public function getTransactions($id)
+    {
+
+        $objectManager    = \Magento\Framework\App\ObjectManager::getInstance();
+        $storeManager     = $objectManager->get(\Magento\Store\Model\StoreManagerInterface::class);
+        $store            = $storeManager->getStore();
+        $baseUrl          = $store->getBaseUrl();
+        $storeScope       = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
         $this->merchantId = $this->scopeConfig->getValue(self::XML_PATH_MERCHANT_ID, $storeScope);
         $this->merchantKey = $this->scopeConfig->getValue(self::XML_PATH_MERCHANT_KEY, $storeScope);
-        $this->_curlUrl = 'https://app.cointopay.com/v2REAPI?Call=Transactiondetail&MerchantID='.$this->merchantId.'&APIKey='.$this->merchantKey.'&TransactionID='.$id.'&output=json';
+        $ctp_api_url = 'https://app.cointopay.com/v2REAPI?Call=Transactiondetail';
+        $ctp_api_req_a = '&MerchantID='.$this->merchantId.'&APIKey='.$this->merchantKey;
+        $ctp_api_req_b = '&TransactionID='.$id.'&output=json';
+        $this->_curlUrl = $ctp_api_url.$ctp_api_req_a.$ctp_api_req_b;
         $this->_curl->get($this->_curlUrl);
         $response = $this->_jsonDecoder->decode($this->_curl->getBody());
-				return [$response];
-	}
-	
-}
+        return [$response];
+    }//end getTransactions()
+}//end class

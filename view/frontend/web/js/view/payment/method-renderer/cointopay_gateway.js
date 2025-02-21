@@ -7,50 +7,57 @@
 define(
     [
         'Magento_Checkout/js/view/payment/default',
-		'Magento_Checkout/js/action/redirect-on-success',
+        'Magento_Checkout/js/action/redirect-on-success',
     ],
     function (Component, redirectOnSuccessAction, url) {
         'use strict';
 
-        return Component.extend({
-            defaults: {
-                template: 'Cointopay_PaymentGateway/payment/form',
-                transactionResult: ''
-            },
+        return Component.extend(
+            {
+                defaults: {
+                    template: 'Cointopay_PaymentGateway/payment/form',
+                    transactionResult: ''
+                },
 
-            initObservable: function () {
+                initObservable: function () {
 
-                this._super()
-                    .observe([
+                    this._super()
+                    .observe(
+                        [
                         'transactionResult'
-                    ]);
-                return this;
-            },
+                        ]
+                    );
+                    return this;
+                },
 
-            getCode: function() {
-                return 'cointopay_gateway';
-            },
+                getCode: function () {
+                    return 'cointopay_gateway';
+                },
 
-            getData: function() {
-                return {
-                    'method': this.item.method,
-                    'additional_data': {
-                        'transaction_result': this.transactionResult()
-                    }
-                };
-            },
-
-            getTransactionResults: function() {
-                return _.map(window.checkoutConfig.payment.cointopay_gateway.transactionResults, function(value, key) {
+                getData: function () {
                     return {
-                        'value': key,
-                        'transaction_result': value
-                    }
-                });
-            },
-            afterPlaceOrder: function () {
-               console.log( redirectOnSuccessAction.redirectUrl );
+                        'method': this.item.method,
+                        'additional_data': {
+                            'transaction_result': this.transactionResult()
+                        }
+                    };
+                },
+
+                getTransactionResults: function () {
+                    return _.map(
+                        window.checkoutConfig.payment.cointopay_gateway.transactionResults,
+                        function (value, key) {
+                            return {
+                                'value': key,
+                                'transaction_result': value
+                            }
+                        }
+                    );
+                },
+                afterPlaceOrder: function () {
+                    console.log(redirectOnSuccessAction.redirectUrl);
+                }
             }
-        });
+        );
     }
 );

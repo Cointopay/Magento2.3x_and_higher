@@ -1,4 +1,5 @@
-<script type="text/javascript">
+<?php $escaper = $block->getobjectManager()->get(\Magento\Framework\Escaper::class);?>
+<script>
     require(
         ['jquery'],
         function($) {
@@ -8,7 +9,7 @@
                     var length_id = merchant_id.length;
                     if (length_id > 2) {
                         $.ajax ({
-                            url: '<?php echo $this->getAjaxUrl() ?>',
+                            url: '<?= $escaper->escapeUrl($block->getAjaxUrl()) ?>',
                             showLoader: true,
                             data: {merchant:merchant_id, type:'merchant'},
                             type: "POST",
@@ -18,11 +19,16 @@
                                 $('.incorrect-merchant').remove();
                                 if (result.length) {
                                     $.each(result, function () {
-                                        $("select[id$='gateway_supported_coins']").append('<option value="'+this.value+'">'+this.title+'</option>');
+                                        $("select[id$='gateway_supported_coins']").append(
+                                        '<option value="'+this.value+'">'+this.title+'</option>'
+                                        );
                                     });
                                 } else {
                                     $("input[id$='merchant_gateway_id']").css('border','1px solid red');
-                                    $("input[id$='merchant_gateway_id']").closest('td').append('<span style="color:red" class="incorrect-merchant">MerchantID should be type Integer, please correct. </span>');
+                                    $("input[id$='merchant_gateway_id']").closest('td').append(
+                                    '<span style="color:red" class="incorrect-merchant">'+
+                                    'MerchantID should be type Integer, please correct. </span>'
+                                    );
                                 }
                             }
                         });
@@ -34,7 +40,7 @@
                     var length_id = security_code.length;
                     if (length_id > 2) {
                         $.ajax ({
-                            url: '<?php echo $this->getAjaxUrl() ?>',
+                            url: '<?= $escaper->escapeUrl($block->getAjaxUrl()) ?>',
                             showLoader: true,
                             data: {merchant:security_code, type:'security'},
                             type: "POST",
@@ -43,7 +49,10 @@
                                 $('.incorrect-security').remove();
                                 if (result.status == 'error') {
                                     $("input[id$='merchant_gateway_security']").css('border','1px solid red');
-                                    $("input[id$='merchant_gateway_security']").closest('td').append('<span style="color:red" class="incorrect-security">SecurityCode should be type Integer, please correct. </span>');
+                                    $("input[id$='merchant_gateway_security']").closest('td').append(
+                                    '<span style="color:red" class="incorrect-security">'+
+                                    'SecurityCode should be type Integer, please correct. </span>'
+                                    );
                                 }
                             }
                         });

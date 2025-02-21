@@ -1,114 +1,157 @@
 <?php
 /**
-* Copyright © 2018 Cointopay. All rights reserved.
-* See COPYING.txt for license details.
-*/
+ * Copyright © 2018 Cointopay. All rights reserved.
+ * See COPYING.txt for license details.
+ *
+ * @author  cointopay <info@cointopay.com>
+ * @license See COPYING.txt for license details.
+ */
 
 namespace Cointopay\PaymentGateway\Controller\Coin;
 
 class Index extends \Magento\Framework\App\Action\Action
 {
-    protected $_context;
-    protected $_pageFactory;
-    protected $_jsonEncoder;
-    protected $_coreSession;
+
+    /**
+     * Context variable
+     *
+     * @var Context
+     */
+    protected $context;
+
+    /**
+     * PageFactory variable
+     *
+     * @var PageFactory
+     */
+    protected $pageFactory;
+
+    /**
+     * EncoderInterface variable
+     *
+     * @var EncoderInterface
+     */
+    protected $jsonEncoder;
+
+    /**
+     * SessionManagerInterface variable
+     *
+     * @var SessionManagerInterface
+     */
+    protected $coreSession;
+
+    /**
+     * JsonFactory variable
+     *
+     * @var JsonFactory
+     */
     protected $resultJsonFactory;
-    /**
-   * @var \Magento\Framework\App\Config\ScopeConfigInterface
-   */
-   protected $scopeConfig;
 
     /**
-    * @var \Magento\Framework\HTTP\Client\Curl
-    */
-    protected $_curl;
+     * ScopeConfigInterface variable
+     *
+     * @var \Magento\Framework\App\Config\ScopeConfigInterface
+     */
+    protected $scopeConfig;
 
     /**
-    * @var $merchantId
-    **/
+     * @var \Magento\Framework\HTTP\Client\Curl
+     */
+    protected $curl;
+
+    /**
+     * @var $merchantId
+     **/
     protected $merchantId;
 
     /**
-    * @var $merchantKey
-    **/
+     * @var $merchantKey
+     **/
     protected $merchantKey;
 
     /**
-    * @var $coinId
-    **/
+     * @var $coinId
+     **/
     protected $coinId;
 
     /**
-    * @var $type
-    **/
+     * @var $type
+     **/
     protected $type;
 
     /**
-    * @var $orderTotal
-    **/
+     * @var $orderTotal
+     **/
     protected $orderTotal;
 
     /**
-    * @var $_curlUrl
-    **/
-    protected $_curlUrl;
+     * @var $_curlUrl
+     **/
+    protected $curlUrl;
 
     /**
-    * @var currencyCode
-    **/
+     * @var currencyCode
+     **/
     protected $currencyCode;
 
     /**
-    * @var $_storeManager
-    **/
-    protected $_storeManager;
-    
+     * StoreManagerInterface variable
+     *
+     * @var $_storeManager
+     **/
+    protected $storeManager;
+
     /**
-    * @var $securityKey
-    **/
+     * @var $securityKey
+     **/
     protected $securityKey;
 
     /**
-    * Merchant ID
-    */
-    const XML_PATH_MERCHANT_ID = 'payment/cointopay_gateway/merchant_gateway_id';
+     * Merchant ID
+     */
+    protected const XML_PATH_MERCHANT_ID = 'payment/cointopay_gateway/merchant_gateway_id';
 
     /**
-    * Merchant COINTOPAY API Key
-    */
-    const XML_PATH_MERCHANT_KEY = 'payment/cointopay_gateway/merchant_gateway_key';
+     * Merchant COINTOPAY API Key
+     */
+    protected const XML_PATH_MERCHANT_KEY = 'payment/cointopay_gateway/merchant_gateway_key';
 
     /**
-    * Merchant COINTOPAY SECURITY Key
-    */
-    const XML_PATH_MERCHANT_SECURITY = 'payment/cointopay_gateway/merchant_gateway_security';
+     * Merchant COINTOPAY SECURITY Key
+     */
+    protected const XML_PATH_MERCHANT_SECURITY = 'payment/cointopay_gateway/merchant_gateway_security';
 
     /**
-    * API URL
-    **/
-    const COIN_TO_PAY_API = 'https://cointopay.com/MerchantAPI';
+     * API URL
+     **/
+    protected const COIN_TO_PAY_API = 'https://cointopay.com/MerchantAPI';
 
     /**
-    * @var $response
-    **/
+     * Response array
+     *
+     * @var $response
+     **/
     protected $response = [] ;
 
     /**
-    * @var \Magento\Framework\Registry
-    */
-    protected $_registry;
+     * Registry variable
+     *
+     * @var \Magento\Framework\Registry
+     */
+    protected $registry;
 
-    /*
-    * @param \Magento\Framework\App\Action\Context $context
-    * @param \Magento\Framework\Json\EncoderInterface $encoder
-    * @param \Magento\Framework\HTTP\Client\Curl $curl
-    * @param \Magento\Framework\App\Config\ScopeConfigInterface    $scopeConfig
-    * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-    * @param \Magento\Framework\View\Result\PageFactory $pageFactory
-    * @param \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory
-    * @param \Magento\Framework\Registry $registry
-    */
-    public function __construct (
+    /**
+     * @param \Magento\Framework\App\Action\Context $context
+     * @param \Magento\Framework\Json\EncoderInterface $encoder
+     * @param \Magento\Framework\HTTP\Client\Curl $curl
+     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param \Magento\Framework\View\Result\PageFactory $pageFactory
+     * @param \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory
+     * @param \Magento\Framework\Session\SessionManagerInterface $coreSession
+     * @param \Magento\Framework\Registry $registry
+     */
+    public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Magento\Framework\Json\EncoderInterface $encoder,
         \Magento\Framework\HTTP\Client\Curl $curl,
@@ -119,23 +162,28 @@ class Index extends \Magento\Framework\App\Action\Action
         \Magento\Framework\Session\SessionManagerInterface $coreSession,
         \Magento\Framework\Registry $registry
     ) {
-        $this->_context = $context;
-        $this->_jsonEncoder = $encoder;
-        $this->_curl = $curl;
-        $this->scopeConfig = $scopeConfig;
-        $this->_storeManager = $storeManager;
-        $this->_pageFactory = $pageFactory;
+        $this->context      = $context;
+        $this->jsonEncoder  = $encoder;
+        $this->curl         = $curl;
+        $this->scopeConfig  = $scopeConfig;
+        $this->storeManager = $storeManager;
+        $this->pageFactory  = $pageFactory;
         $this->resultJsonFactory = $resultJsonFactory;
-        $this->_coreSession = $coreSession;
-        $this->_registry = $registry;
+        $this->coreSession       = $coreSession;
+        $this->registry          = $registry;
         parent::__construct($context);
-    }
+    }//end __construct()
 
+    /**
+     * Execute the action
+     *
+     * @return void
+     */
     public function execute()
     {
         $cCoinId = $this->getRequest()->getParam('coinId');
-        $this->_coreSession->start();
-        $this->_coreSession->setCoinId($cCoinId);
+        $this->coreSession->start();
+        $this->coreSession->setCoinId($cCoinId);
         return $this->getResponse()->setBody($cCoinId);
-    }
-}
+    }//end execute()
+}//end class

@@ -12,6 +12,7 @@ use Cointopay\PaymentGateway\Gateway\Request\MockDataRequest;
 
 class TransferFactory implements TransferFactoryInterface
 {
+
     /**
      * @var TransferBuilder
      */
@@ -24,26 +25,28 @@ class TransferFactory implements TransferFactoryInterface
         TransferBuilder $transferBuilder
     ) {
         $this->transferBuilder = $transferBuilder;
-    }
+    }//end __construct()
 
     /**
      * Builds gateway transfer object
      *
-     * @param array $request
+     * @param  array $request
      * @return TransferInterface
      */
     public function create(array $request)
     {
+        $force_result = null;
+        if (isset($request[MockDataRequest::FORCE_RESULT])) {
+            $force_result = $request[MockDataRequest::FORCE_RESULT];
+        }
         return $this->transferBuilder
             ->setBody($request)
             ->setMethod('POST')
             ->setHeaders(
                 [
-                    'force_result' => isset($request[MockDataRequest::FORCE_RESULT])
-                        ? $request[MockDataRequest::FORCE_RESULT]
-                        : null
+                    'force_result' => $force_result,
                 ]
             )
             ->build();
-    }
-}
+    }//end create()
+}//end class

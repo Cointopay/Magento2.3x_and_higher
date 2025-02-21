@@ -1,9 +1,3 @@
-<!--
-/**
- * Copyright © 2018 Cointopay. All rights reserved.
- * See COPYING.txt for license details.
- */
--->
 <style type="text/css">
 .cointopay-margin {
     margin-bottom: 12px;
@@ -16,7 +10,7 @@
         <input type="radio"
                name="payment[method]"
                class="radio"
-               data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()"/>
+               data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()">
         <label class="label" data-bind="attr: {'for': getCode()}">
             <span data-bind="text: getTitle()"></span>
         </label>

@@ -13,145 +13,169 @@ use Magento\Framework\View\Element\Template\Context;
 
 class Thankyou extends Template
 {
+
+    /**
+     * @var \Magento\Checkout\Model\Session
+     */
     protected $checkoutSession;
+
+    /**
+     * @var \Magento\Customer\Model\Session
+     */
     protected $customerSession;
-    protected $_orderFactory;
-    protected $_coreSession;
-	
-	protected $_pageFactory;
-    protected $_jsonEncoder;
+
+    /**
+     * @var \Magento\Sales\Model\OrderFactory
+     */
+    protected $orderFactory;
+
+    /**
+     * @var \Magento\Framework\Session\SessionManagerInterface
+     */
+    protected $coreSession;
+
+    /**
+     * @var \Magento\Framework\Controller\Result\JsonFactory
+     */
     protected $resultJsonFactory;
-    protected $_objectManager;
-	
-	/**
-	* @var \Magento\Sales\Model\Order\Email\Sender\InvoiceSender
-	*/
+
+    /**
+     * @var \Magento\Sales\Model\Order\Email\Sender\InvoiceSender
+     */
     protected $invoiceSender;
 
     /**
-   * @var \Magento\Framework\App\Config\ScopeConfigInterface
-   */
-   protected $scopeConfig;
+     * @var \Magento\Framework\App\Config\ScopeConfigInterface
+     */
+    protected $scopeConfig;
 
     /**
-    * @var \Magento\Framework\HTTP\Client\Curl
-    */
-    protected $_curl;
+     * @var \Magento\Framework\HTTP\Client\Curl
+     */
+    protected $curl;
 
     /**
-    * @var $merchantKey
-    **/
+     * @var $merchantKey
+     **/
     protected $merchantKey;
-	
-	/**
-    * @var $merchantId
-    **/
+
+    /**
+     * @var $merchantId
+     **/
     protected $merchantId;
 
     /**
-    * @var $_curlUrl
-    **/
+     * @var $_curlUrl
+     **/
     protected $_curlUrl;
-	
-	/**
-    * @var $transactionId
-    **/
+
+    /**
+     * @var $transactionId
+     **/
     protected $transactionId;
 
     /**
-    * Merchant COINTOPAY API Key
-    */
-    const XML_PATH_MERCHANT_KEY = 'payment/cointopay_gateway/merchant_gateway_api_key';
-	
-	/**
-    * Merchant ID
-    */
-    const XML_PATH_MERCHANT_ID = 'payment/cointopay_gateway/merchant_gateway_id';
+     * Merchant COINTOPAY API Key
+     */
+    protected const XML_PATH_MERCHANT_KEY = 'payment/cointopay_gateway/merchant_gateway_api_key';
 
     /**
-    * @var $response
-    **/
-    protected $response = [] ;
+     * Merchant ID
+     */
+    protected const XML_PATH_MERCHANT_ID = 'payment/cointopay_gateway/merchant_gateway_id';
     
+    /**
+     * @var $response
+     **/
+    protected $response = [] ;
+
+    /**
+     * @param \Magento\Checkout\Model\Session $checkoutSession
+     * @param \Magento\Customer\Model\Session $customerSession
+     * @param \Magento\Sales\Model\OrderFactory $orderFactory
+     * @param \Magento\Framework\Registry $registry
+     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param \Magento\Framework\Session\SessionManagerInterface $coreSession
+     * @param \Magento\Framework\HTTP\Client\Curl $curl
+     * @param \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory
+     * @param BlockRepositoryInterface $blockRepository
+     * @param Context $context
+     * @param array $data = []
+     **/
     public function __construct(
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Framework\Registry $registry,
-		\Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-		\Magento\Framework\Session\SessionManagerInterface $coreSession,
+        \Magento\Framework\Session\SessionManagerInterface $coreSession,
         \Magento\Framework\HTTP\Client\Curl $curl,
-		\Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
-		BlockRepositoryInterface $blockRepository,
+        \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
+        BlockRepositoryInterface $blockRepository,
         Context $context,
         array $data = []
     ) {
         parent::__construct($context, (array) $registry, $data);
         $this->checkoutSession = $checkoutSession;
         $this->customerSession = $customerSession;
-        $this->_orderFactory = $orderFactory;
-		$this->scopeConfig = $scopeConfig;
-		$this->_storeManager = $storeManager;
-		$this->_coreSession = $coreSession;
-		$this->_curl = $curl;
-		$this->resultJsonFactory = $resultJsonFactory;
-    }
+        $this->orderFactory   = $orderFactory;
+        $this->scopeConfig     = $scopeConfig;
+        $this->storeManager   = $storeManager;
+        $this->coreSession    = $coreSession;
+        $this->curl           = $curl;
+        $this->resultJsonFactory = $resultJsonFactory;
+    }//end __construct()
 
+    /**
+     * Get Order
+     *
+     * @return array
+     **/
     public function getOrder()
     {
-        $this->_order = $this->_orderFactory->create()->loadByIncrementId(
-            $this->checkoutSession->getLastRealOrderId());
-		if(empty($this->_order)){
-			$objectManager =  \Magento\Framework\App\ObjectManager::getInstance();
-			$orderDatamodel = $objectManager->get('Magento\Sales\Model\Order')->getCollection()->getLastItem();
-			$orderId   =   $orderDatamodel->getId();
-			$this->_order = $objectManager->create('\Magento\Sales\Model\Order')->load($orderId);
-		}
-		return  $this->_order;
-    }
+        $order = $this->orderFactory->create()->loadByIncrementId(
+            $this->checkoutSession->getLastRealOrderId()
+        );
+        if (empty($order)) {
+            $objectManager  = \Magento\Framework\App\ObjectManager::getInstance();
+            $orderDatamodel = $objectManager->get(\Magento\Sales\Model\Order::class)->getCollection()->getLastItem();
+            $orderId        = $orderDatamodel->getId();
+            $order   = $objectManager->create(\Magento\Sales\Model\Order::class)->load($orderId);
+        }
 
+        return  $order;
+    }//end getOrder()
+
+    /**
+     * Get Customer Id
+     *
+     * @return int
+     **/
     public function getCustomerId()
     {
         return $this->customerSession->getCustomer()->getId();
-    }
+    }//end getCustomerId()
 
-    public function getCointopayHtml ()
+    /**
+     * Get Response
+     *
+     * @return string
+     **/
+    public function getCointopayHtml()
     {
-        /*$objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
-        $customerSession = $objectManager->get('Magento\Customer\Model\Session');
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $customerSession    = $objectManager->get(\Magento\Customer\Model\Session::class);
         $cointopay_response = $customerSession->getCoinresponse();
         if (isset($cointopay_response)) {
             $customerSession->unsCoinresponse();
             return json_decode($cointopay_response);
         }
-        return false;*/
-		$objectManager =  \Magento\Framework\App\ObjectManager::getInstance(); 
-        /*$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
-        $store = $storeManager->getStore();
-        $baseUrl = $store->getBaseUrl();
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-		$orderObj = $this->getOrder();
-		if(null !== $orderObj->getExtOrderId()){
-		$this->transactionId = $orderObj->getExtOrderId();
-		$this->merchantId = $this->scopeConfig->getValue(self::XML_PATH_MERCHANT_ID, $storeScope);
-        $this->merchantKey = $this->scopeConfig->getValue(self::XML_PATH_MERCHANT_KEY, $storeScope);
-        $this->_curlUrl = 'https://cointopay.com/v2REAPI?Call=Transactiondetail&MerchantID='.$this->merchantId.'&APIKey=_&ConfirmCode='.$this->transactionId.'&output=json';
-        $this->_curl->get($this->_curlUrl);
-        $response = $this->_curl->getBody();
-        return json_decode($response);
-		}*/
-		
-		$customerSession = $objectManager->get('Magento\Customer\Model\Session');
-        $cointopay_response = $customerSession->getCoinresponse();
-        if (isset($cointopay_response)) {
-            $customerSession->unsCoinresponse();
-            return json_decode($cointopay_response);
-        }
-		return false;
-		
-    }
-    
+
+        return false;
+    }//end getCointopayHtml()
+
     /**
      * Returns value view
      *
@@ -160,36 +184,32 @@ class Thankyou extends Template
     public function getCoinsPaymentUrl()
     {
         return $this->getUrl("paymentcointopay");
-    }
-	
-	/**
-	 * {@inheritdoc}
-	 */
-	public function getTransactions()
-	{
-		
-		$objectManager =  \Magento\Framework\App\ObjectManager::getInstance(); 
-        /*$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
-        $store = $storeManager->getStore();
-        $baseUrl = $store->getBaseUrl();
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-		$orderObj = $this->getOrder();
-		if(null !== $orderObj->getExtOrderId()){
-		$this->transactionId = $orderObj->getExtOrderId();
-		$this->merchantId = $this->scopeConfig->getValue(self::XML_PATH_MERCHANT_ID, $storeScope);
-        $this->merchantKey = $this->scopeConfig->getValue(self::XML_PATH_MERCHANT_KEY, $storeScope);
-        $this->_curlUrl = 'https://app.cointopay.com/v2REAPI?Call=Transactiondetail&MerchantID='.$this->merchantId.'&APIKey='.$this->merchantKey.'&TransactionID='.$this->transactionId.'&output=json';
-        $this->_curl->get($this->_curlUrl);
-        $response = $this->_curl->getBody();
-        return json_decode($response);
-		}*/
-		
-		$customerSession = $objectManager->get('Magento\Customer\Model\Session');
+    }//end getCoinsPaymentUrl()
+
+    /**
+     * Get Transactions
+     *
+     * @return bool
+     */
+    public function getTransactions()
+    {
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $customerSession    = $objectManager->get(\Magento\Customer\Model\Session::class);
         $cointopay_response = $customerSession->getCoinresponse();
         if (isset($cointopay_response)) {
             $customerSession->unsCoinresponse();
             return json_decode($cointopay_response);
         }
-		return false;
-	}
-}
+
+        return false;
+    }//end getTransactions()
+    
+    /**
+     * @inheritdoc
+     */
+    public function getobjectManager()
+    {
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        return $objectManager;
+    }
+}//end class

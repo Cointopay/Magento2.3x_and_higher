@@ -9,15 +9,21 @@ use Magento\Framework\Event\ObserverInterface;
 
 class PlaceOrderAfterObserver implements ObserverInterface
 {
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
     protected $logger;
 
+    /**
+     * @param \Psr\Log\LoggerInterface $logger
+     */
     public function __construct(\Psr\Log\LoggerInterface $logger)
     {
         $this->logger = $logger;
-    }
+    }//end __construct()
 
     /**
-     * Sales Order Place After event handler.
+     * Place order after event handler.
      *
      * @param \Magento\Framework\Event\Observer $observer
      */
@@ -26,5 +32,5 @@ class PlaceOrderAfterObserver implements ObserverInterface
         $this->logger->info('$orderId start 222');
         $this->logger->info('I am inside observer');
         $this->logger->info('$orderId');
-    }
-}
+    }//end execute()
+}//end class
